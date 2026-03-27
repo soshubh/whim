@@ -1,4 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
+import InfoOutlineRounded from "@mui/icons-material/InfoOutlineRounded";
 
 import {
   BuilderCheckbox,
@@ -61,8 +62,16 @@ export function ControlSheet({
         <div className="builder-library">
           {FIELD_LIBRARY.map((item) => (
             <button key={item.type} type="button" className="builder-library-item" onClick={() => addField(item.type)}>
-              <span>{item.label}</span>
-              <small>{item.description}</small>
+              <span className="builder-library-item-row">
+                <span>{item.label}</span>
+                <span
+                  className="builder-library-item-info"
+                  title={item.description}
+                  aria-label={item.description}
+                >
+                  <InfoOutlineRounded fontSize="inherit" />
+                </span>
+              </span>
             </button>
           ))}
         </div>

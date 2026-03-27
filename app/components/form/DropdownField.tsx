@@ -8,8 +8,8 @@ export function DropdownField({ field }: FormFieldComponentProps) {
         <option value="" disabled>
           Select an option
         </option>
-        {(field.options ?? []).map((option) => (
-          <option key={option} value={option}>
+        {(field.options ?? []).map((option, index) => (
+          <option key={`${field.id}-${index}`} value={option}>
             {option}
           </option>
         ))}
