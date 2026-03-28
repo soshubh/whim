@@ -1,4 +1,5 @@
 import { Shell } from "./Shell";
+import { CustomTextareaControl } from "../custom-field-control";
 import type { FormFieldComponentProps } from "../types";
 
 export function Textarea({ field }: FormFieldComponentProps) {
@@ -11,7 +12,7 @@ export function Textarea({ field }: FormFieldComponentProps) {
       isRequiredVisible={field.isRequiredVisible}
       isHelperTextVisible={field.isHelperTextVisible}
     >
-      <textarea className="form-element-control form-element-control--textarea" rows={5} placeholder={field.placeholder} />
+      <CustomTextareaControl placeholder={field.placeholder} />
     </Shell>
   );
 }

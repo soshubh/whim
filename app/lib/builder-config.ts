@@ -1,21 +1,78 @@
+import type { FormActionButton } from "../components/form/button/types";
 import type { Field, FieldType, WidthOption } from "../components/form/types";
+import { getDefaultButtonIcons } from "./button-icons";
 
 export type LayoutMode = "1-col" | "2-col";
 export type PreviewMode = "desktop" | "tablet" | "mobile";
+export type PaddingMode = "all" | "individual";
+export type BuilderStyling = BuilderConfig["styling"];
 
 export type BuilderConfig = {
   fields: Field[];
+  buttons: FormActionButton[];
   styling: {
     layout: LayoutMode;
     tabletLayout?: LayoutMode;
     mobileLayout?: LayoutMode;
+    formPaddingMode: PaddingMode;
+    formPadding: number;
+    formPaddingTop: number;
+    formPaddingRight: number;
+    formPaddingBottom: number;
+    formPaddingLeft: number;
+    inputPaddingMode: PaddingMode;
+    inputPadding: number;
+    inputPaddingTop: number;
+    inputPaddingRight: number;
+    inputPaddingBottom: number;
+    inputPaddingLeft: number;
+    buttonPaddingMode: PaddingMode;
+    buttonPadding: number;
+    buttonPaddingTop: number;
+    buttonPaddingRight: number;
+    buttonPaddingBottom: number;
+    buttonPaddingLeft: number;
+    sectionGap: number;
+    fieldGap: number;
     primaryColor: string;
     surfaceColor: string;
     borderColor: string;
     textColor: string;
     labelColor: string;
     placeholderColor: string;
+    sectionSurfaceColor: string;
+    sectionBorderColor: string;
+    sectionTitleColor: string;
+    sectionBodyColor: string;
+    sectionBorderWidth: number;
+    fieldSurfaceColor: string;
+    fieldBorderColor: string;
+    fieldTextColor: string;
+    fieldLabelColor: string;
+    fieldHelperColor: string;
+    fieldPlaceholderColor: string;
+    fieldFocusColor: string;
+    fieldBorderWidth: number;
+    fieldFocusWidth: number;
+    buttonBorderColor: string;
+    buttonTextColor: string;
+    titleSize: number;
+    titleWeight: number;
+    bodySize: number;
+    bodyWeight: number;
+    labelSize: number;
+    labelWeight: number;
+    helperSize: number;
+    helperWeight: number;
+    inputTextSize: number;
+    inputTextWeight: number;
+    buttonTextSize: number;
+    buttonTextWeight: number;
     radius: number;
+    sectionRadius: number;
+    fieldRadius: number;
+    buttonRadius: number;
+    buttonBorderWidth: number;
     buttonStyle: "solid" | "outline";
   };
   integrations: {
@@ -27,31 +84,8 @@ export type BuilderConfig = {
   formSettings: {
     pageName: string;
     successMessage: string;
-    buttonText: string;
   };
 };
-
-export type ControlPanel =
-  | "add"
-  | "edit"
-  | "integrations"
-  | "form"
-  | "style"
-  | null;
-
-export const FIELD_LIBRARY: Array<{
-  type: FieldType;
-  label: string;
-  description: string;
-}> = [
-  { type: "text", label: "Text Input", description: "Names, company, short answers" },
-  { type: "textarea", label: "Textarea", description: "Long-form responses and notes" },
-  { type: "email", label: "Email", description: "Built-in email validation" },
-  { type: "phone", label: "Phone", description: "Phone-first lead capture" },
-  { type: "select", label: "Dropdown", description: "Compact choice lists" },
-  { type: "radio", label: "Radio", description: "Single-choice selection" },
-  { type: "checkbox", label: "Checkbox", description: "Consent and opt-ins" },
-];
 
 const INITIAL_FIELDS: Field[] = [
   {
@@ -104,17 +138,84 @@ const INITIAL_FIELDS: Field[] = [
   },
 ];
 
+const INITIAL_BUTTONS: FormActionButton[] = [
+  {
+    id: "button-submit-primary",
+    type: "submit",
+    label: "Submit Application",
+    width: "full",
+    isLabelVisible: true,
+    isLeftIconVisible: false,
+    isRightIconVisible: false,
+    leftIcon: getDefaultButtonIcons("submit").left,
+    rightIcon: getDefaultButtonIcons("submit").right,
+  },
+];
+
 export const DEFAULT_CONFIG: BuilderConfig = {
   fields: INITIAL_FIELDS,
+  buttons: INITIAL_BUTTONS,
   styling: {
     layout: "2-col",
+    formPaddingMode: "all",
+    formPadding: 28,
+    formPaddingTop: 28,
+    formPaddingRight: 28,
+    formPaddingBottom: 28,
+    formPaddingLeft: 28,
+    inputPaddingMode: "all",
+    inputPadding: 12,
+    inputPaddingTop: 12,
+    inputPaddingRight: 12,
+    inputPaddingBottom: 12,
+    inputPaddingLeft: 12,
+    buttonPaddingMode: "all",
+    buttonPadding: 12,
+    buttonPaddingTop: 12,
+    buttonPaddingRight: 12,
+    buttonPaddingBottom: 12,
+    buttonPaddingLeft: 12,
+    sectionGap: 18,
+    fieldGap: 14,
     primaryColor: "#0055FF",
-    surfaceColor: "#FFFFFF",
-    borderColor: "#000000",
-    textColor: "#000000",
-    labelColor: "#000000",
-    placeholderColor: "#000000",
-    radius: 20,
+    surfaceColor: "#222222",
+    borderColor: "#2E2E2E",
+    textColor: "#F0F0F0",
+    labelColor: "#888888",
+    placeholderColor: "#555555",
+    sectionSurfaceColor: "#222222",
+    sectionBorderColor: "#2E2E2E",
+    sectionTitleColor: "#F0F0F0",
+    sectionBodyColor: "#888888",
+    sectionBorderWidth: 1,
+    fieldSurfaceColor: "#222222",
+    fieldBorderColor: "#2E2E2E",
+    fieldTextColor: "#F0F0F0",
+    fieldLabelColor: "#888888",
+    fieldHelperColor: "#888888",
+    fieldPlaceholderColor: "#555555",
+    fieldFocusColor: "#0055FF",
+    fieldBorderWidth: 1,
+    fieldFocusWidth: 1,
+    buttonBorderColor: "#0055FF",
+    buttonTextColor: "#FFFFFF",
+    titleSize: 18,
+    titleWeight: 600,
+    bodySize: 12,
+    bodyWeight: 400,
+    labelSize: 12,
+    labelWeight: 600,
+    helperSize: 12,
+    helperWeight: 400,
+    inputTextSize: 16,
+    inputTextWeight: 400,
+    buttonTextSize: 16,
+    buttonTextWeight: 600,
+    radius: 10,
+    sectionRadius: 14,
+    fieldRadius: 10,
+    buttonRadius: 10,
+    buttonBorderWidth: 1,
     buttonStyle: "solid",
   },
   integrations: {
@@ -124,11 +225,220 @@ export const DEFAULT_CONFIG: BuilderConfig = {
     redirectEnabled: true,
   },
   formSettings: {
-    pageName: "Lead Capture Form",
-    successMessage: "Thanks, your submission has been received.",
-    buttonText: "Submit Application",
+    pageName: "Submit Application",
+    successMessage: "Fill in the details below to get started.",
   },
 };
+
+export function normalizeBuilderConfig(config: BuilderConfig): BuilderConfig {
+  const rawStyling = config.styling ?? {};
+  const legacyStyling = rawStyling as typeof rawStyling & {
+    controlPaddingX?: number;
+    controlPaddingY?: number;
+    surfaceColor?: string;
+    borderColor?: string;
+    textColor?: string;
+    labelColor?: string;
+    placeholderColor?: string;
+    primaryColor?: string;
+    radius?: number;
+    buttonBorderColor?: string;
+  };
+  const nextStyling = {
+    ...DEFAULT_CONFIG.styling,
+    ...rawStyling,
+  };
+  const hasExplicitInputPadding =
+    "inputPaddingMode" in rawStyling ||
+    "inputPadding" in rawStyling ||
+    "inputPaddingTop" in rawStyling ||
+    "inputPaddingRight" in rawStyling ||
+    "inputPaddingBottom" in rawStyling ||
+    "inputPaddingLeft" in rawStyling;
+  const hasExplicitButtonPadding =
+    "buttonPaddingMode" in rawStyling ||
+    "buttonPadding" in rawStyling ||
+    "buttonPaddingTop" in rawStyling ||
+    "buttonPaddingRight" in rawStyling ||
+    "buttonPaddingBottom" in rawStyling ||
+    "buttonPaddingLeft" in rawStyling;
+  const hasExplicitSectionColors =
+    "sectionSurfaceColor" in rawStyling ||
+    "sectionBorderColor" in rawStyling ||
+    "sectionTitleColor" in rawStyling ||
+    "sectionBodyColor" in rawStyling;
+  const hasExplicitFieldColors =
+    "fieldSurfaceColor" in rawStyling ||
+    "fieldBorderColor" in rawStyling ||
+    "fieldTextColor" in rawStyling ||
+    "fieldLabelColor" in rawStyling ||
+    "fieldHelperColor" in rawStyling ||
+    "fieldPlaceholderColor" in rawStyling ||
+    "fieldFocusColor" in rawStyling;
+  const hasExplicitButtonColors =
+    "buttonBorderColor" in rawStyling || "buttonTextColor" in rawStyling;
+  const hasExplicitRadii =
+    "sectionRadius" in rawStyling || "fieldRadius" in rawStyling || "buttonRadius" in rawStyling;
+  const legacyControlPaddingX =
+    "controlPaddingX" in legacyStyling && typeof legacyStyling.controlPaddingX === "number"
+      ? legacyStyling.controlPaddingX
+      : undefined;
+  const legacyControlPaddingY =
+    "controlPaddingY" in legacyStyling && typeof legacyStyling.controlPaddingY === "number"
+      ? legacyStyling.controlPaddingY
+      : undefined;
+
+  if (!hasExplicitInputPadding && (legacyControlPaddingX !== undefined || legacyControlPaddingY !== undefined)) {
+    nextStyling.inputPaddingMode = "individual";
+    nextStyling.inputPadding = legacyControlPaddingX ?? DEFAULT_CONFIG.styling.inputPadding;
+    nextStyling.inputPaddingTop = legacyControlPaddingY ?? DEFAULT_CONFIG.styling.inputPaddingTop;
+    nextStyling.inputPaddingRight = legacyControlPaddingX ?? DEFAULT_CONFIG.styling.inputPaddingRight;
+    nextStyling.inputPaddingBottom =
+      legacyControlPaddingY ?? DEFAULT_CONFIG.styling.inputPaddingBottom;
+    nextStyling.inputPaddingLeft = legacyControlPaddingX ?? DEFAULT_CONFIG.styling.inputPaddingLeft;
+  }
+
+  if (!hasExplicitSectionColors) {
+    nextStyling.sectionSurfaceColor =
+      legacyStyling.surfaceColor ?? DEFAULT_CONFIG.styling.sectionSurfaceColor;
+    nextStyling.sectionBorderColor =
+      legacyStyling.borderColor ?? DEFAULT_CONFIG.styling.sectionBorderColor;
+    nextStyling.sectionTitleColor =
+      legacyStyling.textColor ?? DEFAULT_CONFIG.styling.sectionTitleColor;
+    nextStyling.sectionBodyColor =
+      legacyStyling.labelColor ?? DEFAULT_CONFIG.styling.sectionBodyColor;
+  }
+
+  if (!hasExplicitFieldColors) {
+    nextStyling.fieldSurfaceColor =
+      legacyStyling.surfaceColor ?? DEFAULT_CONFIG.styling.fieldSurfaceColor;
+    nextStyling.fieldBorderColor =
+      legacyStyling.borderColor ?? DEFAULT_CONFIG.styling.fieldBorderColor;
+    nextStyling.fieldTextColor =
+      legacyStyling.textColor ?? DEFAULT_CONFIG.styling.fieldTextColor;
+    nextStyling.fieldLabelColor =
+      legacyStyling.labelColor ?? DEFAULT_CONFIG.styling.fieldLabelColor;
+    nextStyling.fieldHelperColor =
+      legacyStyling.labelColor ?? DEFAULT_CONFIG.styling.fieldHelperColor;
+    nextStyling.fieldPlaceholderColor =
+      legacyStyling.placeholderColor ?? DEFAULT_CONFIG.styling.fieldPlaceholderColor;
+    nextStyling.fieldFocusColor =
+      legacyStyling.primaryColor ?? DEFAULT_CONFIG.styling.fieldFocusColor;
+  }
+
+  if (!hasExplicitButtonColors) {
+    nextStyling.buttonBorderColor =
+      legacyStyling.primaryColor ?? DEFAULT_CONFIG.styling.buttonBorderColor;
+  }
+
+  if (!hasExplicitRadii) {
+    const legacyRadius = legacyStyling.radius ?? DEFAULT_CONFIG.styling.fieldRadius;
+    nextStyling.sectionRadius = legacyRadius + 4;
+    nextStyling.fieldRadius = legacyRadius;
+    nextStyling.buttonRadius = legacyRadius;
+  }
+
+  if (!hasExplicitButtonPadding) {
+    const inputPadding = getInputPaddingValues(nextStyling);
+
+    nextStyling.buttonPaddingMode = "all";
+    nextStyling.buttonPadding = inputPadding.right;
+    nextStyling.buttonPaddingTop = inputPadding.top;
+    nextStyling.buttonPaddingRight = inputPadding.right;
+    nextStyling.buttonPaddingBottom = inputPadding.bottom;
+    nextStyling.buttonPaddingLeft = inputPadding.left;
+  }
+
+  return {
+    ...DEFAULT_CONFIG,
+    ...config,
+    fields: config.fields ?? DEFAULT_CONFIG.fields,
+    buttons: config.buttons ?? DEFAULT_CONFIG.buttons,
+    styling: nextStyling,
+    integrations: {
+      ...DEFAULT_CONFIG.integrations,
+      ...config.integrations,
+    },
+    formSettings: {
+      ...DEFAULT_CONFIG.formSettings,
+      ...config.formSettings,
+    },
+  };
+}
+
+export function getFormPaddingValue(
+  styling: Pick<
+    BuilderStyling,
+    | "formPaddingMode"
+    | "formPadding"
+    | "formPaddingTop"
+    | "formPaddingRight"
+    | "formPaddingBottom"
+    | "formPaddingLeft"
+  >,
+) {
+  if (styling.formPaddingMode === "individual") {
+    return `${styling.formPaddingTop}px ${styling.formPaddingRight}px ${styling.formPaddingBottom}px ${styling.formPaddingLeft}px`;
+  }
+
+  return `${styling.formPadding}px`;
+}
+
+export function getInputPaddingValues(
+  styling: Pick<
+    BuilderStyling,
+    | "inputPaddingMode"
+    | "inputPadding"
+    | "inputPaddingTop"
+    | "inputPaddingRight"
+    | "inputPaddingBottom"
+    | "inputPaddingLeft"
+  >,
+) {
+  if (styling.inputPaddingMode === "individual") {
+    return {
+      top: styling.inputPaddingTop,
+      right: styling.inputPaddingRight,
+      bottom: styling.inputPaddingBottom,
+      left: styling.inputPaddingLeft,
+    };
+  }
+
+  return {
+    top: styling.inputPadding,
+    right: styling.inputPadding,
+    bottom: styling.inputPadding,
+    left: styling.inputPadding,
+  };
+}
+
+export function getButtonPaddingValues(
+  styling: Pick<
+    BuilderStyling,
+    | "buttonPaddingMode"
+    | "buttonPadding"
+    | "buttonPaddingTop"
+    | "buttonPaddingRight"
+    | "buttonPaddingBottom"
+    | "buttonPaddingLeft"
+  >,
+) {
+  if (styling.buttonPaddingMode === "individual") {
+    return {
+      top: styling.buttonPaddingTop,
+      right: styling.buttonPaddingRight,
+      bottom: styling.buttonPaddingBottom,
+      left: styling.buttonPaddingLeft,
+    };
+  }
+
+  return {
+    top: styling.buttonPadding,
+    right: styling.buttonPadding,
+    bottom: styling.buttonPadding,
+    left: styling.buttonPadding,
+  };
+}
 
 function titleForType(type: FieldType) {
   switch (type) {
@@ -210,6 +520,25 @@ export function defaultField(type: FieldType, index: number): Field {
   };
 }
 
+export function defaultButton(
+  index: number,
+): FormActionButton {
+  const baseId = `button-${index + 1}`;
+  const defaultIcons = getDefaultButtonIcons("submit");
+
+  return {
+    id: baseId,
+    type: "submit",
+    label: "Button",
+    width: "full",
+    isLabelVisible: true,
+    isLeftIconVisible: false,
+    isRightIconVisible: false,
+    leftIcon: defaultIcons.left,
+    rightIcon: defaultIcons.right,
+  };
+}
+
 export function fieldWidthClass(width: WidthOption, layout: LayoutMode) {
   if (layout === "1-col") {
     return "builder-field--full";
@@ -250,4 +579,19 @@ export function getLayoutForPreview(
   }
 
   return styling.layout;
+}
+
+export function getButtonWidthForPreview(
+  button: FormActionButton,
+  previewMode: PreviewMode,
+) {
+  if (previewMode === "tablet") {
+    return button.tabletWidth ?? button.width;
+  }
+
+  if (previewMode === "mobile") {
+    return button.mobileWidth ?? button.width;
+  }
+
+  return button.width;
 }

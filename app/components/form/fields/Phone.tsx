@@ -1,4 +1,5 @@
 import { Shell } from "./Shell";
+import { CustomTextControl } from "../custom-field-control";
 import type { FormFieldComponentProps } from "../types";
 
 export function Phone({ field }: FormFieldComponentProps) {
@@ -11,7 +12,7 @@ export function Phone({ field }: FormFieldComponentProps) {
       isRequiredVisible={field.isRequiredVisible}
       isHelperTextVisible={field.isHelperTextVisible}
     >
-      <input className="form-element-control" type="tel" placeholder={field.placeholder} />
+      <CustomTextControl type="tel" placeholder={field.placeholder} />
     </Shell>
   );
 }

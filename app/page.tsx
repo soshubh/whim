@@ -1,68 +1,82 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
+import { useMemo, useState } from "react";
 
-import { ControlSheet } from "./components/control-sheet";
-import { BuilderExportPanel } from "./components/export-panel";
-import { Navigation } from "./components/navigation";
-import { BuilderPreviewPanel } from "./components/preview-panel";
-import type { FormButtonState } from "./components/form/button/types";
+import { BuilderCenterPanel } from "./components/builder-center-panel";
+import { BuilderLeftPanel } from "./components/builder-left-panel";
+import { BuilderRightPanel } from "./components/builder-right-panel";
+import { BuilderTopbar } from "./components/builder-topbar";
+import type {
+  FormActionButton,
+  FormButtonState,
+  FormButtonType,
+} from "./components/form/button/types";
 import type { Field, FieldType, WidthOption } from "./components/form/types";
 import {
+  defaultButton,
   DEFAULT_CONFIG,
   defaultField,
   fieldWidthClass,
   getLayoutForPreview,
-  type ControlPanel,
+  normalizeBuilderConfig,
+  type BuilderConfig,
   type PreviewMode,
 } from "./lib/builder-config";
-import {
-  generateAppsScript,
-  generateFramerComponent,
-  generateSetupInstructions,
-} from "./lib/code-generators";
+import { getDefaultButtonIcons } from "./lib/button-icons";
+import { generateAppsScript, generateFramerComponent } from "./lib/code-generators";
+
+type TopbarTab = "builder" | "code" | "settings";
+type RightPanelTab =
+  | "component"
+  | "sheets"
+  | "field"
+  | "button"
+  | "style"
+  | "form"
+  | "integrations";
+
+function cloneDefaultConfig(): BuilderConfig {
+  return {
+    ...DEFAULT_CONFIG,
+    fields: DEFAULT_CONFIG.fields.map((field) => ({
+      ...field,
+      options: field.options ? [...field.options] : undefined,
+    })),
+    buttons: DEFAULT_CONFIG.buttons.map((button) => ({ ...button })),
+    styling: { ...DEFAULT_CONFIG.styling },
+    integrations: { ...DEFAULT_CONFIG.integrations },
+    formSettings: { ...DEFAULT_CONFIG.formSettings },
+  };
+}
 
 export default function Home() {
-  const [config, setConfig] = useState(DEFAULT_CONFIG);
+  const [config, setConfig] = useState<BuilderConfig>(() => cloneDefaultConfig());
   const [selectedFieldId, setSelectedFieldId] = useState(
     DEFAULT_CONFIG.fields[0]?.id ?? "",
   );
+  const [selectedButtonId, setSelectedButtonId] = useState("");
   const [previewMode, setPreviewMode] = useState<PreviewMode>("desktop");
   const [copiedState, setCopiedState] = useState("");
-  const [draggingFieldId, setDraggingFieldId] = useState<string | null>(null);
-  const [activePanel, setActivePanel] = useState<ControlPanel>(null);
+  const [topbarTab, setTopbarTab] = useState<TopbarTab>("builder");
+  const [rightPanelTab, setRightPanelTab] = useState<RightPanelTab>("field");
   const [previewSubmitState] = useState<FormButtonState>("idle");
-  const [workspaceOrientation, setWorkspaceOrientation] = useState<
-    "horizontal" | "vertical"
-  >("horizontal");
+  const resolvedConfig = useMemo(() => normalizeBuilderConfig(config), [config]);
 
   const selectedField =
-    config.fields.find((field) => field.id === selectedFieldId) ??
-    config.fields[0];
-  const activeLayout = getLayoutForPreview(config.styling, previewMode);
+    resolvedConfig.fields.find((field) => field.id === selectedFieldId) ??
+    resolvedConfig.fields[0];
+  const selectedButton =
+    resolvedConfig.buttons.find((button) => button.id === selectedButtonId) ??
+    resolvedConfig.buttons[0];
+  const activeLayout = getLayoutForPreview(resolvedConfig.styling, previewMode);
 
   const generatedFramerCode = useMemo(
-    () => generateFramerComponent(config),
-    [config],
+    () => generateFramerComponent(resolvedConfig),
+    [resolvedConfig],
   );
   const generatedAppsScript = useMemo(
-    () => generateAppsScript(config),
-    [config],
-  );
-  const generatedSetup = useMemo(
-    () => generateSetupInstructions(config),
-    [config],
+    () => generateAppsScript(resolvedConfig),
+    [resolvedConfig],
   );
 
   const updateField = <K extends keyof Field>(
@@ -78,40 +92,70 @@ export default function Home() {
     }));
   };
 
-  const addField = (type: FieldType) => {
-    const newField = defaultField(type, config.fields.length);
+  const changeFieldType = (id: string, nextType: FieldType) => {
+    setConfig((current) => {
+      const fieldIndex = current.fields.findIndex((field) => field.id === id);
+      if (fieldIndex < 0) {
+        return current;
+      }
+
+      const previousField = current.fields[fieldIndex];
+      const replacement = defaultField(nextType, fieldIndex);
+      const nextField: Field = {
+        ...replacement,
+        id: previousField.id,
+        label: previousField.label,
+        required: previousField.required,
+        width: previousField.width,
+        tabletWidth: previousField.tabletWidth,
+        mobileWidth: previousField.mobileWidth,
+        isLabelVisible: previousField.isLabelVisible ?? true,
+        isRequiredVisible: previousField.isRequiredVisible ?? true,
+        isHelperTextVisible: previousField.isHelperTextVisible ?? true,
+      };
+
+      return {
+        ...current,
+        fields: current.fields.map((field) => (field.id === id ? nextField : field)),
+      };
+    });
+  };
+
+  const addField = () => {
+    const newField = defaultField("text", resolvedConfig.fields.length);
     setConfig((current) => ({
       ...current,
       fields: [...current.fields, newField],
     }));
+    setTopbarTab("builder");
     setSelectedFieldId(newField.id);
+    setSelectedButtonId("");
+    setRightPanelTab("field");
   };
 
   const moveFieldTo = (sourceId: string, targetId: string) => {
-    const sourceIndex = config.fields.findIndex(
-      (field) => field.id === sourceId,
-    );
-    const targetIndex = config.fields.findIndex(
-      (field) => field.id === targetId,
-    );
+    setConfig((current) => {
+      const sourceIndex = current.fields.findIndex((field) => field.id === sourceId);
+      const targetIndex = current.fields.findIndex((field) => field.id === targetId);
 
-    if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) {
-      return;
-    }
+      if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) {
+        return current;
+      }
 
-    const fields = [...config.fields];
-    const [field] = fields.splice(sourceIndex, 1);
-    fields.splice(targetIndex, 0, field);
+      const fields = [...current.fields];
+      const [field] = fields.splice(sourceIndex, 1);
+      fields.splice(targetIndex, 0, field);
 
-    setConfig((current) => ({ ...current, fields }));
+      return { ...current, fields };
+    });
   };
 
   const removeField = (id: string) => {
-    const fields = config.fields.filter((field) => field.id !== id);
+    const fields = resolvedConfig.fields.filter((field) => field.id !== id);
     setConfig((current) => ({ ...current, fields }));
 
-    if (selectedFieldId === id && fields.length > 0) {
-      setSelectedFieldId(fields[0].id);
+    if (selectedFieldId === id) {
+      setSelectedFieldId(fields[0]?.id ?? "");
     }
   };
 
@@ -136,146 +180,230 @@ export default function Home() {
     }));
   };
 
+  const updateButton = <K extends keyof FormActionButton>(
+    id: string,
+    key: K,
+    value: FormActionButton[K],
+  ) => {
+    setConfig((current) => ({
+      ...current,
+      buttons: current.buttons.map((button) =>
+        button.id === id ? { ...button, [key]: value } : button,
+      ),
+    }));
+  };
+
+  const changeButtonType = (id: string, nextType: FormButtonType) => {
+    setConfig((current) => ({
+      ...current,
+      buttons: current.buttons.map((button, index) => {
+        if (button.id !== id) {
+          return button;
+        }
+
+        const replacement = defaultButton(index);
+        const defaultLabels: Record<FormButtonType, string> = {
+          submit: "Submit",
+          back: "Back",
+          otp: "Verify OTP",
+        };
+        const shouldResetLabel =
+          button.label === "Button" || button.label === defaultLabels[button.type];
+        const previousDefaultIcons = getDefaultButtonIcons(button.type);
+        const nextDefaultIcons = getDefaultButtonIcons(nextType);
+        const shouldResetLeftIcon =
+          !button.leftIcon || button.leftIcon === previousDefaultIcons.left;
+        const shouldResetRightIcon =
+          !button.rightIcon || button.rightIcon === previousDefaultIcons.right;
+
+        return {
+          ...replacement,
+          id: button.id,
+          type: nextType,
+          label: shouldResetLabel ? defaultLabels[nextType] : button.label,
+          width: button.width,
+          tabletWidth: button.tabletWidth,
+          mobileWidth: button.mobileWidth,
+          isLabelVisible: button.isLabelVisible ?? true,
+          isLeftIconVisible: button.isLeftIconVisible ?? false,
+          isRightIconVisible: button.isRightIconVisible ?? false,
+          leftIcon: shouldResetLeftIcon ? nextDefaultIcons.left : button.leftIcon,
+          rightIcon: shouldResetRightIcon ? nextDefaultIcons.right : button.rightIcon,
+        };
+      }),
+    }));
+  };
+
+  const addButton = () => {
+    const newButton = defaultButton(resolvedConfig.buttons.length);
+    setConfig((current) => ({
+      ...current,
+      buttons: [...current.buttons, newButton],
+    }));
+    setSelectedButtonId(newButton.id);
+    setSelectedFieldId("");
+    setTopbarTab("builder");
+    setRightPanelTab("button");
+  };
+
+  const moveButtonTo = (sourceId: string, targetId: string) => {
+    setConfig((current) => {
+      const sourceIndex = current.buttons.findIndex((button) => button.id === sourceId);
+      const targetIndex = current.buttons.findIndex((button) => button.id === targetId);
+
+      if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) {
+        return current;
+      }
+
+      const buttons = [...current.buttons];
+      const [button] = buttons.splice(sourceIndex, 1);
+      buttons.splice(targetIndex, 0, button);
+
+      return { ...current, buttons };
+    });
+  };
+
+  const removeButton = (id: string) => {
+    const buttons = resolvedConfig.buttons.filter((button) => button.id !== id);
+    setConfig((current) => ({ ...current, buttons }));
+
+    if (selectedButtonId === id) {
+      setSelectedButtonId(buttons[0]?.id ?? "");
+      if (buttons.length === 0 && rightPanelTab === "button") {
+        setRightPanelTab("component");
+      }
+    }
+  };
+
+  const setButtonWidth = (id: string, nextWidth: WidthOption) => {
+    setConfig((current) => ({
+      ...current,
+      buttons: current.buttons.map((button) => {
+        if (button.id !== id) {
+          return button;
+        }
+
+        if (previewMode === "tablet") {
+          return { ...button, tabletWidth: nextWidth };
+        }
+
+        if (previewMode === "mobile") {
+          return { ...button, mobileWidth: nextWidth };
+        }
+
+        return { ...button, width: nextWidth };
+      }),
+    }));
+  };
+
   const copyText = async (label: string, value: string) => {
     await navigator.clipboard.writeText(value);
     setCopiedState(label);
     window.setTimeout(() => setCopiedState(""), 1800);
   };
 
-  useEffect(() => {
-    const updateOrientation = () => {
-      setWorkspaceOrientation(window.innerWidth <= 1180 ? "vertical" : "horizontal");
-    };
+  const resetBuilder = () => {
+    const nextConfig = cloneDefaultConfig();
+    setConfig(nextConfig);
+    setSelectedFieldId(nextConfig.fields[0]?.id ?? "");
+    setSelectedButtonId("");
+    setPreviewMode("desktop");
+    setTopbarTab("builder");
+    setRightPanelTab("field");
+  };
 
-    updateOrientation();
-    window.addEventListener("resize", updateOrientation);
+  const handleTopbarTabChange = (tab: TopbarTab) => {
+    setTopbarTab(tab);
 
-    return () => window.removeEventListener("resize", updateOrientation);
-  }, []);
-
-  const sheetMeta = (() => {
-    switch (activePanel) {
-      case "add":
-        return {
-          title: "Add Field",
-          description: "Choose the next field you want to insert into the form.",
-        };
-      case "edit":
-        return {
-          title: "Field Settings",
-          description:
-            "Edit copy, validation, and choice options for the selected field.",
-        };
-      case "integrations":
-        return {
-          title: "Integrations",
-          description:
-            "Keep delivery targets close to the form configuration so exports stay aligned.",
-        };
-      case "form":
-        return {
-          title: "Form Settings",
-          description:
-            "Define the top-level content that gets reused in the export output.",
-        };
-      case "style":
-        return {
-          title: "Styling Controls",
-          description:
-            "These tokens drive both the preview and generated code defaults.",
-        };
-      default:
-        return null;
+    if (tab === "settings") {
+      setRightPanelTab("style");
+      return;
     }
-  })();
+
+    if (tab === "code") {
+      setRightPanelTab((current) => (current === "sheets" ? "sheets" : "component"));
+      return;
+    }
+
+    setRightPanelTab(selectedButtonId ? "button" : "field");
+  };
+
+  const handleFieldSelect = (fieldId: string) => {
+    setTopbarTab("builder");
+    setSelectedFieldId(fieldId);
+    setSelectedButtonId("");
+    setRightPanelTab("field");
+  };
+
+  const handleButtonSelect = (buttonId: string) => {
+    setTopbarTab("builder");
+    setSelectedFieldId("");
+    setSelectedButtonId(buttonId);
+    setRightPanelTab("button");
+  };
 
   return (
-    <main className="builder-shell">
-      <div className="builder-workspace">
-        <ResizablePanelGroup
-          orientation={workspaceOrientation}
-          className="builder-preview-panel"
-        >
-          <ResizablePanel
-            defaultSize={workspaceOrientation === "horizontal" ? 58 : 60}
-            minSize={workspaceOrientation === "horizontal" ? 40 : 30}
-          >
-            <BuilderPreviewPanel
-              fields={config.fields}
-              layout={activeLayout}
-              previewMode={previewMode}
-              onPreviewModeChange={setPreviewMode}
-              selectedFieldId={selectedFieldId}
-              draggingFieldId={draggingFieldId}
-              onFieldSelect={setSelectedFieldId}
-              onFieldDragStart={(fieldId) => {
-                setDraggingFieldId(fieldId);
-                setSelectedFieldId(fieldId);
-              }}
-              onFieldDragEnd={() => setDraggingFieldId(null)}
-              onFieldDrop={(sourceFieldId, targetFieldId) => {
-                moveFieldTo(sourceFieldId, targetFieldId);
-                setDraggingFieldId(null);
-              }}
-              onFieldRemove={removeField}
-              onFieldWidthSet={setFieldWidth}
-              getFieldWidthClass={fieldWidthClass}
-              styling={config.styling}
-              integrations={config.integrations}
-              formSettings={config.formSettings}
-              submitState={previewSubmitState}
-            />
-          </ResizablePanel>
-          <ResizableHandle className="builder-workspace-handle" />
-          <ResizablePanel
-            defaultSize={workspaceOrientation === "horizontal" ? 42 : 40}
-            minSize={workspaceOrientation === "horizontal" ? 28 : 24}
-          >
-            <BuilderExportPanel
-              copiedState={copiedState}
-              onCopy={copyText}
-              generatedFramerCode={generatedFramerCode}
-              generatedAppsScript={generatedAppsScript}
-              generatedSetup={generatedSetup}
-            />
-          </ResizablePanel>
-        </ResizablePanelGroup>
+    <main className="builder-app-shell">
+      <div className="builder-app">
+        <BuilderTopbar
+          activeTab={topbarTab}
+          onTabChange={handleTopbarTabChange}
+          onNewForm={resetBuilder}
+        />
+
+        <BuilderLeftPanel
+          fields={resolvedConfig.fields}
+          buttons={resolvedConfig.buttons}
+          previewMode={previewMode}
+          selectedFieldId={selectedFieldId}
+          selectedButtonId={selectedButtonId}
+          onFieldSelect={handleFieldSelect}
+          onFieldRemove={removeField}
+          onMoveField={moveFieldTo}
+          onAddField={addField}
+          onButtonSelect={handleButtonSelect}
+          onButtonRemove={removeButton}
+          onMoveButton={moveButtonTo}
+          onAddButton={addButton}
+        />
+
+        <BuilderCenterPanel
+          fields={resolvedConfig.fields}
+          buttons={resolvedConfig.buttons}
+          previewMode={previewMode}
+          layout={activeLayout}
+          styling={resolvedConfig.styling}
+          formSettings={resolvedConfig.formSettings}
+          submitState={previewSubmitState}
+          onPreviewModeChange={setPreviewMode}
+          onFieldSelect={handleFieldSelect}
+          selectedFieldId={selectedFieldId}
+          onButtonSelect={handleButtonSelect}
+          selectedButtonId={selectedButtonId}
+          getFieldWidthClass={fieldWidthClass}
+        />
+
+        <BuilderRightPanel
+          mode={topbarTab}
+          activeTab={rightPanelTab}
+          config={resolvedConfig}
+          copiedState={copiedState}
+          generatedAppsScript={generatedAppsScript}
+          generatedFramerCode={generatedFramerCode}
+          previewMode={previewMode}
+          selectedField={selectedField}
+          selectedButton={selectedButton}
+          onCopy={copyText}
+          onTabChange={setRightPanelTab}
+          onConfigChange={setConfig}
+          onFieldUpdate={updateField}
+          onFieldTypeChange={changeFieldType}
+          onFieldWidthSet={setFieldWidth}
+          onButtonUpdate={updateButton}
+          onButtonTypeChange={changeButtonType}
+          onButtonWidthSet={setButtonWidth}
+        />
       </div>
-
-      <Sheet open={Boolean(activePanel)} onOpenChange={(open) => !open && setActivePanel(null)}>
-        <SheetContent
-          side="bottom"
-          showCloseButton={false}
-          className="builder-control-modal-sheet"
-        >
-          {sheetMeta ? (
-            <>
-              <SheetTitle className="sr-only">{sheetMeta.title}</SheetTitle>
-              <SheetDescription className="sr-only">
-                {sheetMeta.description}
-              </SheetDescription>
-            </>
-          ) : null}
-          <ControlSheet
-            activePanel={activePanel}
-            config={config}
-            selectedField={selectedField}
-            addField={addField}
-            updateField={updateField}
-            setConfig={setConfig}
-            onClose={() => setActivePanel(null)}
-            previewMode={previewMode}
-          />
-        </SheetContent>
-      </Sheet>
-
-      <Navigation
-        activePanel={activePanel}
-        hasSelectedField={Boolean(selectedField)}
-        onChange={(panel) =>
-          setActivePanel((current) => (current === panel ? null : panel))
-        }
-      />
     </main>
   );
 }

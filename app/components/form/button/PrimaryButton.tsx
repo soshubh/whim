@@ -1,16 +1,27 @@
 import type { FormButtonProps } from "./types";
+import { CustomActionButton } from "./custom-action-button";
 
-export function PrimaryButton({ label, state }: FormButtonProps) {
-  const stateLabel =
-    state === "loading" ? "Submitting..." : state === "success" ? "Submitted" : state === "error" ? "Retry Submit" : label;
-
+export function PrimaryButton({
+  label,
+  state,
+  actionType = "submit",
+  isLabelVisible,
+  isLeftIconVisible,
+  isRightIconVisible,
+  leftIcon,
+  rightIcon,
+}: FormButtonProps) {
   return (
-    <button
-      type="button"
-      className={`builder-submit builder-submit--solid builder-submit-state--${state}`}
-      aria-busy={state === "loading"}
-    >
-      {stateLabel}
-    </button>
+    <CustomActionButton
+      variant="solid"
+      label={label}
+      state={state}
+      actionType={actionType}
+      isLabelVisible={isLabelVisible}
+      isLeftIconVisible={isLeftIconVisible}
+      isRightIconVisible={isRightIconVisible}
+      leftIcon={leftIcon}
+      rightIcon={rightIcon}
+    />
   );
 }

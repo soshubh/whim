@@ -1,4 +1,5 @@
 import { Shell } from "./Shell";
+import { CustomSelectControl } from "../custom-field-control";
 import type { FormFieldComponentProps } from "../types";
 
 export function Dropdown({ field }: FormFieldComponentProps) {
@@ -11,16 +12,10 @@ export function Dropdown({ field }: FormFieldComponentProps) {
       isRequiredVisible={field.isRequiredVisible}
       isHelperTextVisible={field.isHelperTextVisible}
     >
-      <select className="form-element-control" defaultValue="">
-        <option value="" disabled>
-          Select an option
-        </option>
-        {(field.options ?? []).map((option, index) => (
-          <option key={`${field.id}-${index}`} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
+      <CustomSelectControl
+        placeholder={field.placeholder ?? "Select an option"}
+        options={field.options}
+      />
     </Shell>
   );
 }

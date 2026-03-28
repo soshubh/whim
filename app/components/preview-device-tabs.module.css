@@ -1,0 +1,46 @@
+.root {
+  display: flex;
+  align-items: stretch;
+  align-self: stretch;
+  justify-self: center;
+  gap: 2px;
+  height: 100%;
+  width: max-content;
+  border: 1px solid var(--builder-border);
+  border-radius: var(--builder-radius-s);
+  background: var(--builder-surface-2);
+  padding: 2px;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 100%;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  padding: 0 8px;
+  color: var(--builder-text-3);
+  font-weight: 500;
+  transition:
+    background 150ms ease,
+    color 150ms ease;
+}
+
+.label {
+  display: inline-block;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.tab svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+.tabActive {
+  background: var(--builder-surface-3);
+  color: var(--builder-text);
+}

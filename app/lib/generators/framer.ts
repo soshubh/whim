@@ -13,6 +13,9 @@ function toPascalCase(value: string) {
 export function generateFramerComponent(config: BuilderConfig) {
   const componentName = `${toPascalCase(config.formSettings.pageName) || "Generated"}Form`;
   const fieldsDefinition = JSON.stringify(config.fields, null, 2);
+  const buttonsDefinition = JSON.stringify(config.buttons, null, 2);
+  const phoneFieldId = config.fields.find((field) => field.type === "phone")?.id ?? "";
+  const emailFieldId = config.fields.find((field) => field.type === "email")?.id ?? "";
   const integrationControls = [
     config.integrations.otpEnabled &&
       `otpWebhookUrl: { type: ControlType.String, title: "OTP URL", defaultValue: "" }`,
@@ -47,84 +50,324 @@ export function generateFramerComponent(config: BuilderConfig) {
     : "";
   const otpSubmission = config.integrations.otpEnabled
     ? `
-      if (props.otpWebhookUrl) {
-        await fetch(props.otpWebhookUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phone: values.phone || values.phoneNumber || "", email: values.email || "" }),
-        });
-      }`
+    if (props.otpWebhookUrl) {
+      await fetch(props.otpWebhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: ${phoneFieldId ? `values["${phoneFieldId}"] || ""` : `""`},
+          email: ${emailFieldId ? `values["${emailFieldId}"] || ""` : `""`},
+        }),
+      })
+    }`
     : "";
   const redirectSubmission = config.integrations.redirectEnabled
     ? `
-      if (props.redirectUrl) {
-        window.location.assign(props.redirectUrl)
-        return
-      }`
+    if (props.redirectUrl) {
+      window.location.assign(props.redirectUrl)
+      return
+    }`
     : "";
 
   const generatedComponents = [
-    `function getInputStyle(props) {
+    `function getFormPadding(props) {
+  if (props.formPaddingMode === "individual") {
+    return \`\${props.formPaddingTop}px \${props.formPaddingRight}px \${props.formPaddingBottom}px \${props.formPaddingLeft}px\`
+  }
+
+  return props.formPadding
+}
+
+function getInputPadding(props) {
+  if (props.inputPaddingMode === "individual") {
+    return {
+      top: props.inputPaddingTop,
+      right: props.inputPaddingRight,
+      bottom: props.inputPaddingBottom,
+      left: props.inputPaddingLeft,
+    }
+  }
+
   return {
-    minHeight: 50,
+    top: props.inputPadding,
+    right: props.inputPadding,
+    bottom: props.inputPadding,
+    left: props.inputPadding,
+  }
+}
+
+function getButtonPadding(props) {
+  if (props.buttonPaddingMode === "individual") {
+    return {
+      top: props.buttonPaddingTop,
+      right: props.buttonPaddingRight,
+      bottom: props.buttonPaddingBottom,
+      left: props.buttonPaddingLeft,
+    }
+  }
+
+  return {
+    top: props.buttonPadding,
+    right: props.buttonPadding,
+    bottom: props.buttonPadding,
+    left: props.buttonPadding,
+  }
+}
+
+function getInputSurfaceStyle(props, options = {}) {
+  const inputPadding = getInputPadding(props)
+  const topPadding = options.isTextarea ? inputPadding.top + 3 : inputPadding.top
+  const borderWidth = options.isFocused ? props.fieldFocusWidth : props.fieldBorderWidth
+
+  return {
+    position: "relative",
+    display: "flex",
+    alignItems: options.isTextarea ? "flex-start" : "center",
     width: "100%",
-    padding: "0 14px",
-    borderRadius: props.radius,
-    border: \`1px solid \${props.borderColor}\`,
-    background: props.surfaceColor,
-    color: props.textColor,
+    ...(options.isTextarea ? { minHeight: 132 } : {}),
+    padding: \`\${topPadding}px \${inputPadding.right}px \${inputPadding.bottom}px \${inputPadding.left}px\`,
+    ...(options.hasTrailing ? { paddingRight: inputPadding.right + 28 } : {}),
+    borderRadius: props.fieldRadius,
+    border: \`\${borderWidth}px solid \${options.isFocused ? props.fieldFocusColor : props.fieldBorderColor}\`,
+    background: props.fieldSurfaceColor,
+    color: options.isPlaceholder ? props.fieldPlaceholderColor : props.fieldTextColor,
+    boxSizing: "border-box",
+  }
+}
+
+function getNativeInputStyle(props, options = {}) {
+  const inputPadding = getInputPadding(props)
+  const topPadding = options.isTextarea ? inputPadding.top + 3 : inputPadding.top
+
+  return {
+    position: "absolute",
+    inset: 0,
+    width: "100%",
+    height: "100%",
+    padding: \`\${topPadding}px \${inputPadding.right}px \${inputPadding.bottom}px \${inputPadding.left}px\`,
+    border: "none",
+    background: "transparent",
+    color: "transparent",
+    caretColor: props.fieldTextColor,
+    fontFamily: "inherit",
+    fontSize: props.inputTextSize,
+    fontWeight: props.inputTextWeight,
+    lineHeight: 1.2,
     outline: "none",
+    resize: options.isTextarea ? "vertical" : "none",
+    WebkitTextFillColor: "transparent",
+    ...(options.isSelect ? { opacity: 0, cursor: "pointer", appearance: "none" } : {}),
   }
 }
 
 function getChoiceStyle(props) {
+  const inputPadding = getInputPadding(props)
+
   return {
     display: "inline-flex",
     alignItems: "center",
     gap: 8,
-    padding: "12px 14px",
-    borderRadius: props.radius,
-    border: \`1px solid \${props.borderColor}\`,
-    background: props.surfaceColor,
+    padding: \`\${inputPadding.top}px \${inputPadding.right}px \${inputPadding.bottom}px \${inputPadding.left}px\`,
+    borderRadius: props.fieldRadius,
+    border: \`\${props.fieldBorderWidth}px solid \${props.fieldBorderColor}\`,
+    background: props.fieldSurfaceColor,
+    fontSize: props.inputTextSize,
+    fontWeight: props.inputTextWeight,
+    color: props.fieldTextColor,
   }
 }
 
-function getButtonStyle(props) {
+function getButtonRootStyle() {
+  return {
+    width: "100%",
+    padding: 0,
+    border: "none",
+    background: "transparent",
+    appearance: "none",
+    cursor: "pointer",
+  }
+}
+
+function getButtonSurfaceStyle(props) {
+  const buttonPadding = getButtonPadding(props)
+  const shared = {
+    width: "100%",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: props.buttonRadius,
+    fontSize: props.buttonTextSize,
+    fontWeight: props.buttonTextWeight,
+    lineHeight: 1.2,
+    padding: \`\${buttonPadding.top}px \${buttonPadding.right}px \${buttonPadding.bottom}px \${buttonPadding.left}px\`,
+    boxSizing: "border-box",
+  }
+
   return props.buttonVariant === "outline"
     ? {
-        minHeight: 52,
-        borderRadius: props.radius,
-        border: \`1px solid \${props.primaryColor}\`,
-        color: props.primaryColor,
+        ...shared,
+        border: \`\${props.buttonBorderWidth}px solid \${props.buttonBorderColor}\`,
+        color: props.buttonTextColor,
         background: "transparent",
-        fontWeight: 700,
-        padding: "0 20px",
       }
     : {
-        minHeight: 52,
-        borderRadius: props.radius,
-        border: "none",
-        color: "#fff",
+        ...shared,
+        border: \`\${props.buttonBorderWidth}px solid \${props.buttonBorderColor}\`,
+        color: props.buttonTextColor,
         background: props.primaryColor,
-        fontWeight: 700,
-        padding: "0 20px",
       }
+}
+
+function ButtonIcon({ icon, size = 18 }) {
+  if (icon === "arrowBack") {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d="M19 12H5M5 12L11 6M5 12L11 18"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    )
+  }
+
+  if (icon === "send") {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d="M3 20.01L20 3M3 20.01L9 20M3 20.01L3 14"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    )
+  }
+
+  if (icon === "call") {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d="M5 4.5C5 14.165 9.835 19 19.5 19L21 15.5L16.75 13.5L14.75 15.5C11.785 14.02 9.98 12.215 8.5 9.25L10.5 7.25L8.5 3L5 4.5Z"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    )
+  }
+
+  if (icon === "sms") {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d="M4 6.5C4 5.12 5.12 4 6.5 4H17.5C18.88 4 20 5.12 20 6.5V14.5C20 15.88 18.88 17 17.5 17H9L4 20V6.5Z"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    )
+  }
+
+  if (icon === "lock") {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect
+          x="5"
+          y="11"
+          width="14"
+          height="9"
+          rx="2"
+          stroke="currentColor"
+          strokeWidth="2"
+        />
+        <path
+          d="M8 11V8.5C8 6.01 10.01 4 12.5 4C14.99 4 17 6.01 17 8.5V11"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      </svg>
+    )
+  }
+
+  if (icon === "check") {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d="M5 12L10 17L19 8"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    )
+  }
+
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M5 12H19M19 12L13 6M19 12L13 18"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function ChevronIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M7 10L12 15L17 10"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function getButtonContent(button, label, props) {
+  const leftIcon = button.leftIcon || (button.type === "back" ? "arrowBack" : button.type === "otp" ? "lock" : "send")
+  const rightIcon = button.rightIcon || "arrowForward"
+  const iconSize = props.buttonTextSize + 5
+
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: props.buttonTextSize, lineHeight: 1.2 }}>
+      {button.isLeftIconVisible === true ? <ButtonIcon icon={leftIcon} size={iconSize} /> : null}
+      {button.isLabelVisible !== false ? <span>{label}</span> : null}
+      {button.isRightIconVisible === true ? <ButtonIcon icon={rightIcon} size={iconSize} /> : null}
+    </span>
+  )
 }
 
 function FieldShell({ label, required, isLabelVisible, isRequiredVisible, message, isHelperTextVisible, children, props }) {
   return (
     <label style={{ display: "grid", gap: 8 }}>
       {isLabelVisible !== false ? (
-        <span style={{ color: props.labelColor, fontWeight: 600, fontSize: 14 }}>
+        <span style={{ color: props.fieldLabelColor, fontWeight: props.labelWeight, fontSize: props.labelSize }}>
           {label}{required && isRequiredVisible !== false ? " *" : ""}
         </span>
       ) : null}
       {children}
-      {message && isHelperTextVisible !== false ? <span style={{ color: props.labelColor, opacity: 0.68, fontSize: 13 }}>{message}</span> : null}
+      {message && isHelperTextVisible !== false ? (
+        <span style={{ color: props.fieldHelperColor, fontSize: props.helperSize, fontWeight: props.helperWeight }}>{message}</span>
+      ) : null}
     </label>
   )
 }`,
-    `function InputField({ field, value, onChange, props, type = "text" }) {
+    `function InputField({ field, value, onChange, onFocus, onBlur, isFocused, props, type = "text" }) {
   return (
     <FieldShell
       label={field.label}
@@ -135,17 +378,26 @@ function FieldShell({ label, required, isLabelVisible, isRequiredVisible, messag
       isHelperTextVisible={field.isHelperTextVisible}
       props={props}
     >
-      <input
-        type={type}
-        value={value}
-        onChange={(event) => onChange(field.id, event.target.value)}
-        placeholder={field.placeholder || ""}
-        style={getInputStyle(props)}
-      />
+      <div style={{ position: "relative" }}>
+        <div aria-hidden="true" style={getInputSurfaceStyle(props, { isPlaceholder: !value, isFocused })}>
+          <span style={{ display: "block", width: "100%", fontSize: props.inputTextSize, fontWeight: props.inputTextWeight, lineHeight: 1.2, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+            {value || field.placeholder || "\u00A0"}
+          </span>
+        </div>
+        <input
+          type={type}
+          value={value}
+          onChange={(event) => onChange(field.id, event.target.value)}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          placeholder=""
+          style={getNativeInputStyle(props)}
+        />
+      </div>
     </FieldShell>
   )
 }`,
-    `function TextareaField({ field, value, onChange, props }) {
+    `function TextareaField({ field, value, onChange, onFocus, onBlur, isFocused, props }) {
   return (
     <FieldShell
       label={field.label}
@@ -156,16 +408,25 @@ function FieldShell({ label, required, isLabelVisible, isRequiredVisible, messag
       isHelperTextVisible={field.isHelperTextVisible}
       props={props}
     >
-      <textarea
-        value={value}
-        onChange={(event) => onChange(field.id, event.target.value)}
-        placeholder={field.placeholder || ""}
-        style={{ ...getInputStyle(props), minHeight: 132, padding: 14, resize: "vertical" }}
-      />
+      <div style={{ position: "relative" }}>
+        <div aria-hidden="true" style={getInputSurfaceStyle(props, { isTextarea: true, isPlaceholder: !value, isFocused })}>
+          <span style={{ display: "block", width: "100%", fontSize: props.inputTextSize, fontWeight: props.inputTextWeight, lineHeight: 1.2, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+            {value || field.placeholder || "\u00A0"}
+          </span>
+        </div>
+        <textarea
+          value={value}
+          onChange={(event) => onChange(field.id, event.target.value)}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          placeholder=""
+          style={getNativeInputStyle(props, { isTextarea: true })}
+        />
+      </div>
     </FieldShell>
   )
 }`,
-    `function DropdownField({ field, value, onChange, props }) {
+    `function DropdownField({ field, value, onChange, onFocus, onBlur, isFocused, props }) {
   return (
     <FieldShell
       label={field.label}
@@ -176,16 +437,28 @@ function FieldShell({ label, required, isLabelVisible, isRequiredVisible, messag
       isHelperTextVisible={field.isHelperTextVisible}
       props={props}
     >
-      <select
-        value={value}
-        onChange={(event) => onChange(field.id, event.target.value)}
-        style={getInputStyle(props)}
-      >
-        <option value="">{field.placeholder || "Select an option"}</option>
-        {(field.options || []).map((option) => (
-          <option key={option} value={option}>{option}</option>
-        ))}
-      </select>
+      <div style={{ position: "relative" }}>
+        <div aria-hidden="true" style={getInputSurfaceStyle(props, { isPlaceholder: !value, hasTrailing: true, isFocused })}>
+          <span style={{ display: "block", width: "100%", fontSize: props.inputTextSize, fontWeight: props.inputTextWeight, lineHeight: 1.2, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+            {value || field.placeholder || "Select an option"}
+          </span>
+          <span style={{ position: "absolute", top: "50%", right: getInputPadding(props).right, display: "inline-flex", alignItems: "center", justifyContent: "center", color: props.fieldLabelColor, transform: "translateY(-50%)" }}>
+            <ChevronIcon />
+          </span>
+        </div>
+        <select
+          value={value}
+          onChange={(event) => onChange(field.id, event.target.value)}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          style={getNativeInputStyle(props, { isSelect: true })}
+        >
+          <option value="">{field.placeholder || "Select an option"}</option>
+          {(field.options || []).map((option) => (
+            <option key={option} value={option}>{option}</option>
+          ))}
+        </select>
+      </div>
     </FieldShell>
   )
 }`,
@@ -228,33 +501,18 @@ function FieldShell({ label, required, isLabelVisible, isRequiredVisible, messag
     </label>
   )
 }`,
-    `function SubmitButton({ state, props }) {
-  const label = state === "loading"
-    ? "Submitting..."
-    : state === "success"
-      ? "Submitted"
-      : state === "error"
-        ? "Retry Submit"
-        : props.buttonText
-
-  return (
-    <button type="submit" disabled={state === "loading"} style={getButtonStyle(props)}>
-      {label}
-    </button>
-  )
-}`,
-    `function renderField(field, value, onChange, props) {
+    `function renderField(field, value, onChange, isFocused, onFocus, onBlur, props) {
   switch (field.type) {
     case "text":
-      return <InputField field={field} value={value} onChange={onChange} props={props} />
+      return <InputField field={field} value={value} onChange={onChange} onFocus={onFocus} onBlur={onBlur} isFocused={isFocused} props={props} />
     case "email":
-      return <InputField field={field} value={value} onChange={onChange} props={props} type="email" />
+      return <InputField field={field} value={value} onChange={onChange} onFocus={onFocus} onBlur={onBlur} isFocused={isFocused} props={props} type="email" />
     case "phone":
-      return <InputField field={field} value={value} onChange={onChange} props={props} type="tel" />
+      return <InputField field={field} value={value} onChange={onChange} onFocus={onFocus} onBlur={onBlur} isFocused={isFocused} props={props} type="tel" />
     case "textarea":
-      return <TextareaField field={field} value={value} onChange={onChange} props={props} />
+      return <TextareaField field={field} value={value} onChange={onChange} onFocus={onFocus} onBlur={onBlur} isFocused={isFocused} props={props} />
     case "select":
-      return <DropdownField field={field} value={value} onChange={onChange} props={props} />
+      return <DropdownField field={field} value={value} onChange={onChange} onFocus={onFocus} onBlur={onBlur} isFocused={isFocused} props={props} />
     case "radio":
       return <RadioField field={field} value={value} onChange={onChange} props={props} />
     case "checkbox":
@@ -263,13 +521,13 @@ function FieldShell({ label, required, isLabelVisible, isRequiredVisible, messag
       return null
   }
 }`,
-  ]
-    .join("\n\n");
+  ].join("\n\n");
 
   return `import * as React from "react";
 import { addPropertyControls, ControlType } from "framer";
 
 const fields = ${fieldsDefinition};
+const buttons = ${buttonsDefinition};
 const layout = {
   desktop: "${config.styling.layout}",
   tablet: "${config.styling.tabletLayout ?? config.styling.layout}",
@@ -314,12 +572,23 @@ function getFieldWidth(field, activeMode) {
   return field.width
 }
 
-function getGridColumn(field, activeMode, layout) {
-  if (layout !== "2-col") {
+function getButtonWidth(button, activeMode) {
+  if (activeMode === "mobile" && button.mobileWidth) {
+    return button.mobileWidth
+  }
+
+  if (activeMode === "tablet" && button.tabletWidth) {
+    return button.tabletWidth
+  }
+
+  return button.width
+}
+
+function getGridColumn(width, layoutValue) {
+  if (layoutValue !== "2-col") {
     return "span 6"
   }
 
-  const width = getFieldWidth(field, activeMode)
   if (width === "third") {
     return "span 2"
   }
@@ -350,13 +619,23 @@ function getLayoutForViewport(props, viewportWidth) {
 export default function ${componentName}(props) {
   const [values, setValues] = React.useState(() =>
     Object.fromEntries(fields.map((field) => [field.id, field.type === "checkbox" ? false : ""]))
-  );
-  const [submitState, setSubmitState] = React.useState("idle");
-  const [viewportWidth, setViewportWidth] = React.useState(() => getViewportWidth());
+  )
+  const [submitState, setSubmitState] = React.useState("idle")
+  const [focusedFieldId, setFocusedFieldId] = React.useState(null)
+  const [viewportWidth, setViewportWidth] = React.useState(() => getViewportWidth())
 
   const handleChange = React.useCallback((fieldId, nextValue) => {
-    setValues((current) => ({ ...current, [fieldId]: nextValue }));
-  }, []);
+    setValues((current) => ({ ...current, [fieldId]: nextValue }))
+  }, [])
+
+  const handleOtp = React.useCallback(async () => {${otpSubmission}
+  }, [props.otpWebhookUrl, values])
+
+  const handleBack = React.useCallback(() => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      window.history.back()
+    }
+  }, [])
 
   React.useEffect(() => {
     const handleResize = () => {
@@ -368,30 +647,47 @@ export default function ${componentName}(props) {
   }, [])
 
   const handleSubmit = React.useCallback(async (event) => {
-    event.preventDefault();
-    setSubmitState("loading");
+    event.preventDefault()
+    setSubmitState("loading")
 
     const payload = {
       submittedAt: new Date().toISOString(),
       values,
-    };
+    }
 ${googleSheetsSubmission}
 ${fullDataSubmission}
-${otpSubmission}
 
-    setSubmitState("success");
+    setSubmitState("success")
 ${redirectSubmission}
-  }, [values]);
+  }, [props.fullDataWebhookUrl, props.googleSheetsUrl, props.redirectUrl, values])
 
   const activeMode = getActiveMode(props, viewportWidth)
   const activeLayout = getLayoutForViewport(props, viewportWidth)
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: "grid", gap: 18 }}>
+    <form
+      onSubmit={handleSubmit}
+      style={{
+        display: "grid",
+        gap: props.sectionGap,
+        padding: getFormPadding(props),
+        borderRadius: props.sectionRadius,
+        background: props.sectionSurfaceColor,
+        border: \`\${props.sectionBorderWidth}px solid \${props.sectionBorderColor}\`,
+      }}
+    >
+      <div style={{ display: "grid", gap: 4 }}>
+        <div style={{ color: props.sectionTitleColor, fontSize: props.titleSize, fontWeight: props.titleWeight }}>
+          ${JSON.stringify(config.formSettings.pageName)}
+        </div>
+        <div style={{ color: props.sectionBodyColor, fontSize: props.bodySize, fontWeight: props.bodyWeight }}>
+          ${JSON.stringify(config.formSettings.successMessage)}
+        </div>
+      </div>
       <div
         style={{
           display: "grid",
-          gap: 14,
+          gap: props.fieldGap,
           gridTemplateColumns: activeLayout === "2-col" ? "repeat(6, minmax(0, 1fr))" : "1fr",
         }}
       >
@@ -399,17 +695,79 @@ ${redirectSubmission}
           <div
             key={field.id}
             style={{
-              gridColumn: getGridColumn(field, activeMode, activeLayout),
+              gridColumn: getGridColumn(getFieldWidth(field, activeMode), activeLayout),
             }}
           >
-            {renderField(field, values[field.id], handleChange, props)}
+            {renderField(
+              field,
+              values[field.id],
+              handleChange,
+              focusedFieldId === field.id,
+              () => setFocusedFieldId(field.id),
+              () => setFocusedFieldId((current) => (current === field.id ? null : current)),
+              props
+            )}
           </div>
         ))}
       </div>
 
-      <SubmitButton state={submitState} props={props} />
+      {buttons.length > 0 ? (
+        <div
+          style={{
+            display: "grid",
+            gap: props.fieldGap,
+            gridTemplateColumns: activeLayout === "2-col" ? "repeat(6, minmax(0, 1fr))" : "1fr",
+          }}
+        >
+          {buttons.map((button) => {
+            const label = button.type === "submit"
+              ? submitState === "loading"
+                ? "Submitting..."
+                : submitState === "success"
+                  ? "Submitted"
+                  : submitState === "error"
+                    ? "Retry Submit"
+                    : button.label
+              : button.label
+
+            const sharedProps = {
+              disabled: button.type === "submit" && submitState === "loading",
+              style: getButtonRootStyle(),
+            }
+
+            return (
+              <div
+                key={button.id}
+                style={{
+                  gridColumn: getGridColumn(getButtonWidth(button, activeMode), activeLayout),
+                }}
+              >
+                {button.type === "submit" ? (
+                  <button type="submit" {...sharedProps}>
+                    <span style={getButtonSurfaceStyle(props)}>
+                      {getButtonContent(button, label, props)}
+                    </span>
+                  </button>
+                ) : button.type === "otp" ? (
+                  <button type="button" onClick={handleOtp} style={getButtonRootStyle()}>
+                    <span style={getButtonSurfaceStyle(props)}>
+                      {getButtonContent(button, label, props)}
+                    </span>
+                  </button>
+                ) : (
+                  <button type="button" onClick={handleBack} style={getButtonRootStyle()}>
+                    <span style={getButtonSurfaceStyle(props)}>
+                      {getButtonContent(button, label, props)}
+                    </span>
+                  </button>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      ) : null}
     </form>
-  );
+  )
 }
 
 ${integrationControls ? `addPropertyControls(${componentName}, {\n  ${integrationControls},` : `addPropertyControls(${componentName}, {`}
@@ -421,14 +779,77 @@ ${integrationControls ? `addPropertyControls(${componentName}, {\n  ${integratio
     displaySegmentedControl: true,
     defaultValue: "desktop",
   },
-  primaryColor: { type: ControlType.Color, title: "Primary", defaultValue: "${config.styling.primaryColor}" },
-  surfaceColor: { type: ControlType.Color, title: "Surface", defaultValue: "${config.styling.surfaceColor}" },
-  borderColor: { type: ControlType.Color, title: "Border", defaultValue: "${config.styling.borderColor}" },
-  textColor: { type: ControlType.Color, title: "Text", defaultValue: "${config.styling.textColor}" },
-  labelColor: { type: ControlType.Color, title: "Label", defaultValue: "${config.styling.labelColor}" },
-  placeholderColor: { type: ControlType.Color, title: "Placeholder", defaultValue: "${config.styling.placeholderColor}" },
-  radius: { type: ControlType.Number, title: "Radius", min: 0, max: 32, defaultValue: ${config.styling.radius} },
-  buttonText: { type: ControlType.String, title: "Button", defaultValue: "${config.formSettings.buttonText}" },
+  primaryColor: { type: ControlType.Color, title: "Button Color", defaultValue: "${config.styling.primaryColor}" },
+  buttonBorderColor: { type: ControlType.Color, title: "Button Border", defaultValue: "${config.styling.buttonBorderColor}" },
+  buttonTextColor: { type: ControlType.Color, title: "Button Text", defaultValue: "${config.styling.buttonTextColor}" },
+  sectionSurfaceColor: { type: ControlType.Color, title: "Section Surface", defaultValue: "${config.styling.sectionSurfaceColor}" },
+  sectionBorderColor: { type: ControlType.Color, title: "Section Border", defaultValue: "${config.styling.sectionBorderColor}" },
+  sectionBorderWidth: { type: ControlType.Number, title: "Section Border Width", min: 0, max: 12, step: 0.1, defaultValue: ${config.styling.sectionBorderWidth} },
+  sectionTitleColor: { type: ControlType.Color, title: "Section Title", defaultValue: "${config.styling.sectionTitleColor}" },
+  sectionBodyColor: { type: ControlType.Color, title: "Section Body", defaultValue: "${config.styling.sectionBodyColor}" },
+  fieldSurfaceColor: { type: ControlType.Color, title: "Field Surface", defaultValue: "${config.styling.fieldSurfaceColor}" },
+  fieldBorderColor: { type: ControlType.Color, title: "Field Border", defaultValue: "${config.styling.fieldBorderColor}" },
+  fieldBorderWidth: { type: ControlType.Number, title: "Field Border Width", min: 0, max: 12, step: 0.1, defaultValue: ${config.styling.fieldBorderWidth} },
+  fieldTextColor: { type: ControlType.Color, title: "Field Text", defaultValue: "${config.styling.fieldTextColor}" },
+  fieldLabelColor: { type: ControlType.Color, title: "Field Label", defaultValue: "${config.styling.fieldLabelColor}" },
+  fieldHelperColor: { type: ControlType.Color, title: "Field Helper", defaultValue: "${config.styling.fieldHelperColor}" },
+  fieldPlaceholderColor: { type: ControlType.Color, title: "Field Placeholder", defaultValue: "${config.styling.fieldPlaceholderColor}" },
+  fieldFocusColor: { type: ControlType.Color, title: "Field Focus", defaultValue: "${config.styling.fieldFocusColor}" },
+  fieldFocusWidth: { type: ControlType.Number, title: "Field Focus Width", min: 0, max: 12, step: 0.1, defaultValue: ${config.styling.fieldFocusWidth} },
+  formPaddingMode: {
+    type: ControlType.Enum,
+    title: "Padding Mode",
+    options: ["all", "individual"],
+    optionTitles: ["All", "4 sides"],
+    defaultValue: "${config.styling.formPaddingMode}",
+  },
+  formPadding: { type: ControlType.Number, title: "Form Padding", min: 0, max: 64, defaultValue: ${config.styling.formPadding} },
+  formPaddingTop: { type: ControlType.Number, title: "Pad Top", min: 0, max: 64, defaultValue: ${config.styling.formPaddingTop} },
+  formPaddingRight: { type: ControlType.Number, title: "Pad Right", min: 0, max: 64, defaultValue: ${config.styling.formPaddingRight} },
+  formPaddingBottom: { type: ControlType.Number, title: "Pad Bottom", min: 0, max: 64, defaultValue: ${config.styling.formPaddingBottom} },
+  formPaddingLeft: { type: ControlType.Number, title: "Pad Left", min: 0, max: 64, defaultValue: ${config.styling.formPaddingLeft} },
+  inputPaddingMode: {
+    type: ControlType.Enum,
+    title: "Input Pad Mode",
+    options: ["all", "individual"],
+    optionTitles: ["All", "4 sides"],
+    defaultValue: "${config.styling.inputPaddingMode}",
+  },
+  inputPadding: { type: ControlType.Number, title: "Input Padding", min: 0, max: 32, defaultValue: ${config.styling.inputPadding} },
+  inputPaddingTop: { type: ControlType.Number, title: "Input Top", min: 0, max: 32, defaultValue: ${config.styling.inputPaddingTop} },
+  inputPaddingRight: { type: ControlType.Number, title: "Input Right", min: 0, max: 32, defaultValue: ${config.styling.inputPaddingRight} },
+  inputPaddingBottom: { type: ControlType.Number, title: "Input Bottom", min: 0, max: 32, defaultValue: ${config.styling.inputPaddingBottom} },
+  inputPaddingLeft: { type: ControlType.Number, title: "Input Left", min: 0, max: 32, defaultValue: ${config.styling.inputPaddingLeft} },
+  buttonPaddingMode: {
+    type: ControlType.Enum,
+    title: "Button Pad Mode",
+    options: ["all", "individual"],
+    optionTitles: ["All", "4 sides"],
+    defaultValue: "${config.styling.buttonPaddingMode}",
+  },
+  buttonPadding: { type: ControlType.Number, title: "Button Padding", min: 0, max: 40, defaultValue: ${config.styling.buttonPadding} },
+  buttonPaddingTop: { type: ControlType.Number, title: "Button Top", min: 0, max: 40, defaultValue: ${config.styling.buttonPaddingTop} },
+  buttonPaddingRight: { type: ControlType.Number, title: "Button Right", min: 0, max: 40, defaultValue: ${config.styling.buttonPaddingRight} },
+  buttonPaddingBottom: { type: ControlType.Number, title: "Button Bottom", min: 0, max: 40, defaultValue: ${config.styling.buttonPaddingBottom} },
+  buttonPaddingLeft: { type: ControlType.Number, title: "Button Left", min: 0, max: 40, defaultValue: ${config.styling.buttonPaddingLeft} },
+  sectionGap: { type: ControlType.Number, title: "Section Gap", min: 0, max: 48, defaultValue: ${config.styling.sectionGap} },
+  fieldGap: { type: ControlType.Number, title: "Field Gap", min: 0, max: 40, defaultValue: ${config.styling.fieldGap} },
+  titleSize: { type: ControlType.Number, title: "Title Size", min: 10, max: 40, defaultValue: ${config.styling.titleSize} },
+  titleWeight: { type: ControlType.Enum, title: "Title Weight", options: ["300", "400", "500", "600", "700"], defaultValue: "${config.styling.titleWeight}" },
+  bodySize: { type: ControlType.Number, title: "Body Size", min: 8, max: 24, defaultValue: ${config.styling.bodySize} },
+  bodyWeight: { type: ControlType.Enum, title: "Body Weight", options: ["300", "400", "500", "600", "700"], defaultValue: "${config.styling.bodyWeight}" },
+  labelSize: { type: ControlType.Number, title: "Label Size", min: 8, max: 20, defaultValue: ${config.styling.labelSize} },
+  labelWeight: { type: ControlType.Enum, title: "Label Weight", options: ["300", "400", "500", "600", "700"], defaultValue: "${config.styling.labelWeight}" },
+  helperSize: { type: ControlType.Number, title: "Helper Size", min: 8, max: 20, defaultValue: ${config.styling.helperSize} },
+  helperWeight: { type: ControlType.Enum, title: "Helper Weight", options: ["300", "400", "500", "600", "700"], defaultValue: "${config.styling.helperWeight}" },
+  inputTextSize: { type: ControlType.Number, title: "Input Size", min: 8, max: 24, defaultValue: ${config.styling.inputTextSize} },
+  inputTextWeight: { type: ControlType.Enum, title: "Input Weight", options: ["300", "400", "500", "600", "700"], defaultValue: "${config.styling.inputTextWeight}" },
+  buttonTextSize: { type: ControlType.Number, title: "Button Size", min: 8, max: 24, defaultValue: ${config.styling.buttonTextSize} },
+  buttonTextWeight: { type: ControlType.Enum, title: "Button Weight", options: ["300", "400", "500", "600", "700"], defaultValue: "${config.styling.buttonTextWeight}" },
+  sectionRadius: { type: ControlType.Number, title: "Section Radius", min: 0, max: 48, defaultValue: ${config.styling.sectionRadius} },
+  fieldRadius: { type: ControlType.Number, title: "Field Radius", min: 0, max: 32, defaultValue: ${config.styling.fieldRadius} },
+  buttonRadius: { type: ControlType.Number, title: "Button Radius", min: 0, max: 32, defaultValue: ${config.styling.buttonRadius} },
+  buttonBorderWidth: { type: ControlType.Number, title: "Button Border Width", min: 0, max: 12, step: 0.1, defaultValue: ${config.styling.buttonBorderWidth} },
   buttonVariant: {
     type: ControlType.Enum,
     title: "Button Style",
