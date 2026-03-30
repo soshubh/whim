@@ -211,11 +211,13 @@
    ============================================================ */
 .hero {
   position: relative;
-  min-height: 100vh;
+  height: 100dvh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding-top: 56px;
+  padding-bottom: 0;
   background: #000000;
   overflow: hidden;
 }
@@ -234,8 +236,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: 100px 24px 48px;
+  flex: 1;
+  padding: 0 24px;
   max-width: 800px;
   width: 100%;
   margin: 0 auto;
@@ -358,21 +362,35 @@
 
 /* ── Hero Stage ──────────────────────────────────────────── */
 .heroStage {
-  position: relative;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 1;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 10px;
+  justify-content: flex-end;
 }
 
 .heroArtwork {
   position: relative;
   width: 100%;
-  max-width: 840px;
-  min-height: 132px;
-  background: transparent;
+  max-width: 1200px;
+  min-height: 360px;
+  padding: 0;
+  background:
+    radial-gradient(
+      66% 90% at 50% 82%,
+      rgba(18, 54, 255, 0.88) 0%,
+      rgba(18, 54, 255, 0.46) 38%,
+      rgba(18, 54, 255, 0.16) 62%,
+      rgba(18, 54, 255, 0) 82%
+    );
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
   overflow: visible;
 }
 
@@ -389,14 +407,7 @@
 
 /* ── Learn Overlay labels ────────────────────────────────── */
 .learnOverlay {
-  position: relative;
-  top: auto;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: space-between;
-  padding: 0 10px;
-  z-index: 4;
+  display: none;
 }
 
 .learnColumn {
@@ -419,18 +430,23 @@
   left: auto;
   transform: none;
   display: flex;
-  gap: 10px;
+  gap: 14px;
   z-index: 4;
   align-items: center;
-  margin-top: 18px;
+  justify-content: center;
+  margin: auto auto 0;
+  transform: translateY(-20px);
 }
 
 .learnCard {
-  width: 88px;
-  height: 88px;
+  width: 96px;
+  height: 96px;
   border-radius: 18px;
-  background: #111111;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -447,28 +463,21 @@
 }
 
 .learnCardImage {
-  width: 56px;
-  height: 56px;
+  width: 62px;
+  height: 62px;
   object-fit: cover;
   border-radius: 10px;
 }
 
 .learnCardLabels {
-  position: relative;
-  bottom: auto;
-  left: auto;
-  transform: none;
-  display: flex;
-  gap: 10px;
-  z-index: 4;
-  margin-top: 8px;
+  display: none;
 }
 
 .learnCardLabel {
   font-size: 11.5px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.48);
-  width: 88px;
+  color: rgba(255, 255, 255, 0.66);
+  width: 96px;
   text-align: center;
   display: flex;
   align-items: center;
@@ -479,7 +488,7 @@
 
 .playMark {
   font-size: 7px;
-  color: rgba(255, 255, 255, 0.28);
+  color: rgba(255, 255, 255, 0.4);
 }
 
 /* Hide old device mock */
@@ -1147,10 +1156,24 @@
     line-height: 0.9em;
   }
   .learnCards {
-    display: none;
+    display: flex;
+    gap: 8px;
+    transform: translateY(-12px);
+  }
+  .learnCard {
+    width: 64px;
+    height: 64px;
+    border-radius: 14px;
+  }
+  .learnCardImage {
+    width: 40px;
+    height: 40px;
   }
   .learnCardLabels {
     display: none;
+  }
+  .heroArtwork {
+    min-height: 220px;
   }
   .featureStripSection {
     grid-template-columns: 1fr;

@@ -367,15 +367,6 @@ export default function ProductHomePage() {
           <div className={styles.heroArtwork}>
             <div className={styles.heroGlow} />
 
-            <div className={styles.learnOverlay}>
-              <div className={styles.learnColumn}>
-                <div className={styles.overlayLabel}>Watch and learn</div>
-              </div>
-              <div className={styles.learnColumn}>
-                <div className={styles.overlayLabel}>Start in seconds</div>
-              </div>
-            </div>
-
             <div className={styles.learnCards}>
               {learnLinks.map((item, index) => (
                 <div className={styles.learnCard} key={item}>
@@ -386,15 +377,6 @@ export default function ProductHomePage() {
                       src={learnAssets[index]}
                     />
                   </div>
-                </div>
-              ))}
-            </div>
-
-            <div className={styles.learnCardLabels}>
-              {learnLinks.map((item) => (
-                <div className={styles.learnCardLabel} key={item}>
-                  <span className={styles.playMark}>▷</span>
-                  {item}
                 </div>
               ))}
             </div>
