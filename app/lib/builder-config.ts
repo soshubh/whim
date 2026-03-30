@@ -238,10 +238,10 @@ export const DEFAULT_CONFIG: BuilderConfig = {
     showSubtext: false,
   },
   integrations: {
-    otpEnabled: true,
+    otpEnabled: false,
     sheetsEnabled: true,
     webhookEnabled: false,
-    redirectEnabled: true,
+    redirectEnabled: false,
   },
   formSettings: {
     pageName: "Submit Application",

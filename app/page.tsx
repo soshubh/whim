@@ -26,13 +26,14 @@ import {
 import { getDefaultButtonIcons } from "./lib/button-icons";
 import { generateAppsScript, generateFramerComponent } from "./lib/code-generators";
 
-type TopbarTab = "builder" | "code" | "settings" | "advanced";
+type TopbarTab = "builder" | "code" | "settings";
 type RightPanelTab =
   | "component"
   | "sheets"
   | "field"
   | "button"
   | "style"
+  | "advanced-style"
   | "integrations";
 
 function cloneDefaultConfig(): BuilderConfig {
@@ -316,7 +317,7 @@ export default function Home() {
   const handleTopbarTabChange = (tab: TopbarTab) => {
     setTopbarTab(tab);
 
-    if (tab === "settings" || tab === "advanced") {
+    if (tab === "settings") {
       setRightPanelTab("style");
       return;
     }

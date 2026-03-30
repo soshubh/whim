@@ -54,9 +54,8 @@ export function BuilderRightPanel({
         />
       ) : null}
 
-      {mode === "settings" || mode === "advanced" ? (
+      {mode === "settings" ? (
         <SettingsModePanel
-          variant={mode === "advanced" ? "advanced" : "basic"}
           activeTab={activeTab}
           config={config}
           previewMode={previewMode}

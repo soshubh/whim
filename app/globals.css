@@ -912,27 +912,6 @@
   font-weight: 500;
 }
 
-.builder-app-live-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  border: 1px solid rgb(0 197 114 / 0.2);
-  border-radius: 999px;
-  background: rgb(0 197 114 / 0.1);
-  padding: 2px 7px;
-  color: var(--builder-green);
-  font-size: 10px;
-  font-weight: 600;
-}
-
-.builder-app-live-badge::before {
-  content: "";
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--builder-green);
-}
-
 .builder-app-code-scroll {
   flex: 1;
   min-height: 0;

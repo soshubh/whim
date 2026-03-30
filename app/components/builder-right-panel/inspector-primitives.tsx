@@ -162,17 +162,21 @@ export function InspectorShell({
   badge,
   children,
 }: {
-  title: ReactNode;
+  title?: ReactNode;
   titleClassName?: string;
   badge?: ReactNode;
   children: ReactNode;
 }) {
+  const hasHeader = title != null || badge != null;
+
   return (
     <div className="builder-app-code-panel">
-      <div className="builder-app-code-header">
-        <div className={titleClassName}>{title}</div>
-        {badge ? <span className="builder-app-field-config-badge">{badge}</span> : null}
-      </div>
+      {hasHeader ? (
+        <div className="builder-app-code-header">
+          <div className={titleClassName}>{title}</div>
+          {badge ? <span className="builder-app-field-config-badge">{badge}</span> : null}
+        </div>
+      ) : null}
       <div className="builder-app-config-scroll">{children}</div>
     </div>
   );

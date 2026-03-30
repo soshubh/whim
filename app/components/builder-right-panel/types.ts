@@ -9,7 +9,7 @@ import type {
 } from "../form/button/types";
 import type { Field, FieldType, WidthOption } from "../form/types";
 
-export type SettingsTab = "style" | "integrations";
+export type SettingsTab = "style" | "advanced-style" | "integrations";
 export type RightPanelTab =
   | "component"
   | "sheets"
@@ -18,7 +18,7 @@ export type RightPanelTab =
   | SettingsTab;
 
 export type BuilderRightPanelProps = {
-  mode: "builder" | "code" | "settings" | "advanced";
+  mode: "builder" | "code" | "settings";
   activeTab: RightPanelTab;
   config: BuilderConfig;
   copiedState: string;

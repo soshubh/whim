@@ -9,20 +9,17 @@ function CodeSurface({
   copiedState,
   onCopy,
   content,
-  live,
 }: {
   filename: string;
   mode: "component" | "sheets";
   copiedState: string;
   onCopy: (label: string, value: string) => void;
   content: string;
-  live?: boolean;
 }) {
   return (
     <div className="builder-app-code-panel">
       <div className="builder-app-code-header">
         <div className="builder-app-code-filename">{filename}</div>
-        {live ? <div className="builder-app-live-badge">Live</div> : null}
         <SystemButton
           variant="secondary"
           size="sm"
@@ -93,7 +90,6 @@ export function CodeModePanel({
           copiedState={copiedState}
           onCopy={onCopy}
           content={generatedFramerCode}
-          live
         />
       ) : null}
 

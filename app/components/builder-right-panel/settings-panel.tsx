@@ -446,115 +446,17 @@ function TypographyRow({
 }
 
 function StylePanel({
-  variant,
   config,
   previewMode,
   onConfigChange,
 }: {
-  variant: "basic" | "advanced";
   config: BuilderConfig;
   previewMode: PreviewMode;
   onConfigChange: Dispatch<SetStateAction<BuilderConfig>>;
 }) {
   const effectiveLayout = getLayoutForPreview(config.styling, previewMode);
   const styling = resolveStylingForPreview(config.styling, previewMode);
-
-  if (variant === "basic") {
-    return (
-      <InspectorShell title="Settings" badge="essentials">
-        <InspectorCard title="Layout">
-          <SelectRow
-            label={
-              previewMode === "desktop"
-                ? "Desktop layout"
-                : previewMode === "tablet"
-                  ? "Tablet layout"
-                  : "Mobile layout"
-            }
-            value={effectiveLayout}
-            onChange={(event) =>
-              onConfigChange((current) =>
-                updateConfigForPreview(current, previewMode, {
-                  layout: event.target.value as LayoutMode,
-                }),
-              )
-            }
-          >
-            <option value="1-col">1 column</option>
-            <option value="2-col">2 column</option>
-          </SelectRow>
-          <SelectRow
-            label="Button style"
-            value={styling.buttonStyle}
-            onChange={(event) =>
-              onConfigChange((current) =>
-                updateConfigForPreview(current, previewMode, {
-                  buttonStyle: event.target.value as BuilderConfig["styling"]["buttonStyle"],
-                }),
-              )
-            }
-          >
-            <option value="solid">Solid</option>
-            <option value="outline">Outline</option>
-          </SelectRow>
-        </InspectorCard>
-
-        <InspectorCard title="Theme">
-          <ColorInputRow
-            label="Section surface"
-            value={styling.sectionSurfaceColor}
-            onChange={(value) =>
-              onConfigChange((current) =>
-                updateConfigForPreview(current, previewMode, { sectionSurfaceColor: value }),
-              )
-            }
-          />
-          <ColorInputRow
-            label="Field surface"
-            value={styling.fieldSurfaceColor}
-            onChange={(value) =>
-              onConfigChange((current) =>
-                updateConfigForPreview(current, previewMode, { fieldSurfaceColor: value }),
-              )
-            }
-          />
-          <ColorInputRow
-            label="Button color"
-            value={styling.primaryColor}
-            onChange={(value) =>
-              onConfigChange((current) =>
-                updateConfigForPreview(current, previewMode, {
-                  primaryColor: value,
-                  fieldFocusColor: value,
-                  buttonBorderColor: value,
-                }),
-              )
-            }
-          />
-        </InspectorCard>
-
-        <InspectorCard title="Shape">
-          <TextInputRow
-            label="Radius"
-            type="number"
-            min={0}
-            max={48}
-            value={styling.fieldRadius}
-            onChange={(event) =>
-              onConfigChange((current) =>
-                updateConfigForPreview(current, previewMode, {
-                  sectionRadius: Number(event.target.value || 0),
-                  fieldRadius: Number(event.target.value || 0),
-                  buttonRadius: Number(event.target.value || 0),
-                }),
-              )
-            }
-          />
-        </InspectorCard>
-      </InspectorShell>
-    );
-  }
-
+  
   const tinyControlTextMessage =
     "Native input and button controls may still render larger in some browsers below 10px.";
 
@@ -575,7 +477,132 @@ function StylePanel({
   );
 
   return (
-    <InspectorShell title="Styling Controls" badge="preview + export">
+    <InspectorShell>
+      <InspectorCard title="Layout">
+        <SelectRow
+          label={
+            previewMode === "desktop"
+              ? "Desktop layout"
+              : previewMode === "tablet"
+                ? "Tablet layout"
+                : "Mobile layout"
+          }
+          value={effectiveLayout}
+          onChange={(event) =>
+            onConfigChange((current) =>
+              updateConfigForPreview(current, previewMode, {
+                layout: event.target.value as LayoutMode,
+              }),
+            )
+          }
+        >
+          <option value="1-col">1 column</option>
+          <option value="2-col">2 column</option>
+        </SelectRow>
+        <SelectRow
+          label="Button style"
+          value={styling.buttonStyle}
+          onChange={(event) =>
+            onConfigChange((current) =>
+              updateConfigForPreview(current, previewMode, {
+                buttonStyle: event.target.value as BuilderConfig["styling"]["buttonStyle"],
+              }),
+            )
+          }
+        >
+          <option value="solid">Solid</option>
+          <option value="outline">Outline</option>
+        </SelectRow>
+      </InspectorCard>
+
+      <InspectorCard title="Theme">
+        <ColorInputRow
+          label="Section surface"
+          value={styling.sectionSurfaceColor}
+          onChange={(value) =>
+            onConfigChange((current) =>
+              updateConfigForPreview(current, previewMode, { sectionSurfaceColor: value }),
+            )
+          }
+        />
+        <ColorInputRow
+          label="Field surface"
+          value={styling.fieldSurfaceColor}
+          onChange={(value) =>
+            onConfigChange((current) =>
+              updateConfigForPreview(current, previewMode, { fieldSurfaceColor: value }),
+            )
+          }
+        />
+        <ColorInputRow
+          label="Button color"
+          value={styling.primaryColor}
+          onChange={(value) =>
+            onConfigChange((current) =>
+              updateConfigForPreview(current, previewMode, {
+                primaryColor: value,
+                fieldFocusColor: value,
+                buttonBorderColor: value,
+              }),
+            )
+          }
+        />
+      </InspectorCard>
+
+      <InspectorCard title="Shape">
+        <TextInputRow
+          label="Radius"
+          type="number"
+          min={0}
+          max={48}
+          value={styling.fieldRadius}
+          onChange={(event) =>
+            onConfigChange((current) =>
+              updateConfigForPreview(current, previewMode, {
+                sectionRadius: Number(event.target.value || 0),
+                fieldRadius: Number(event.target.value || 0),
+                buttonRadius: Number(event.target.value || 0),
+              }),
+            )
+          }
+        />
+      </InspectorCard>
+    </InspectorShell>
+  );
+}
+
+function AdvancedStylePanel({
+  config,
+  previewMode,
+  onConfigChange,
+}: {
+  config: BuilderConfig;
+  previewMode: PreviewMode;
+  onConfigChange: Dispatch<SetStateAction<BuilderConfig>>;
+}) {
+  const effectiveLayout = getLayoutForPreview(config.styling, previewMode);
+  const styling = resolveStylingForPreview(config.styling, previewMode);
+  const tinyControlTextMessage =
+    "Native input and button controls may still render larger in some browsers below 10px.";
+
+  const getControlTextLabel = (label: string, shouldWarn: boolean) => (
+    <span className="builder-app-config-label-with-hint">
+      <span>{label}</span>
+      {shouldWarn ? (
+        <button
+          type="button"
+          className="builder-app-config-hint"
+          aria-label={tinyControlTextMessage}
+          title={tinyControlTextMessage}
+        >
+          <VisibilityOutlined fontSize="inherit" />
+        </button>
+      ) : null}
+    </span>
+  );
+
+  return (
+    <InspectorShell>
       <InspectorCard title="Layout">
         <SelectRow
           label={
@@ -1043,7 +1070,7 @@ function IntegrationsPanel({
   onConfigChange: Dispatch<SetStateAction<BuilderConfig>>;
 }) {
   return (
-    <InspectorShell title="Integrations" badge="delivery">
+    <InspectorShell>
       <InspectorCard title="Destinations">
         <ToggleRow
           label="Enable OTP verification"
@@ -1091,7 +1118,6 @@ function IntegrationsPanel({
 }
 
 type SettingsModePanelProps = {
-  variant: "basic" | "advanced";
   activeTab: RightPanelTab;
   config: BuilderConfig;
   previewMode: PreviewMode;
@@ -1100,7 +1126,6 @@ type SettingsModePanelProps = {
 };
 
 export function SettingsModePanel({
-  variant,
   activeTab,
   config,
   previewMode,
@@ -1119,6 +1144,13 @@ export function SettingsModePanel({
         </button>
         <button
           type="button"
+          className={`builder-app-code-tab ${activeTab === "advanced-style" ? "is-active" : ""}`}
+          onClick={() => onTabChange("advanced-style")}
+        >
+          Advanced Style
+        </button>
+        <button
+          type="button"
           className={`builder-app-code-tab ${activeTab === "integrations" ? "is-active" : ""}`}
           onClick={() => onTabChange("integrations")}
         >
@@ -1128,7 +1160,14 @@ export function SettingsModePanel({
 
       {activeTab === "style" ? (
         <StylePanel
-          variant={variant}
+          config={config}
+          previewMode={previewMode}
+          onConfigChange={onConfigChange}
+        />
+      ) : null}
+
+      {activeTab === "advanced-style" ? (
+        <AdvancedStylePanel
           config={config}
           previewMode={previewMode}
           onConfigChange={onConfigChange}
