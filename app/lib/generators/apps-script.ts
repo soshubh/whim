@@ -11,7 +11,11 @@ function doPost(e) {
   const sheet = getOrCreateSheet_();
   const row = [
     payload.submittedAt,
-    ...HEADERS.slice(1).map((header) => payload.values[normalizeHeader_(header)] || ""),
+    ...HEADERS.slice(1).map((header) => {
+      const fieldId = "field-" + normalizeHeader_(header);
+      const value = payload.values[fieldId];
+      return Array.isArray(value) ? value.join(", ") : value || "";
+    }),
   ];
 
   sheet.appendRow(row);
