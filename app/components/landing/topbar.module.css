@@ -217,10 +217,10 @@
   }
 
   .topbarInner {
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: 28px 1fr 28px;
     min-height: 62px;
-    padding: 0 18px;
-    gap: 16px;
+    padding: 0 20px;
+    gap: 0;
   }
 
   .topbarNav {

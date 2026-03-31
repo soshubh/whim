@@ -371,13 +371,6 @@ export default function ProductHomePage() {
       <GridBackground />
       <section className={styles.hero}>
         <LandingTopbar items={landingNavItems} />
-        <div className={styles.promoBar}>
-          <a className={styles.promoBarLink} href="/builder">
-            Introducing interactive exports. Design forms, validate states, and
-            ship production-ready code from one builder. Try it now →
-          </a>
-        </div>
-
         <div className={styles.heroCopy}>
           <Badge className={styles.heroEyebrow} variant="outline">
             Production-ready Framer forms
@@ -399,6 +392,13 @@ export default function ProductHomePage() {
               Totally free
             </Badge>
           </div>
+        </div>
+
+        <div className={styles.promoBar}>
+          <a className={styles.promoBarLink} href="/builder">
+            Introducing interactive exports. Design forms, validate states, and
+            ship production-ready code from one builder. Try it now →
+          </a>
         </div>
 
       </section>
