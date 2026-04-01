@@ -18,7 +18,7 @@ export function LandingSubpageShell({
   children,
 }: LandingSubpageShellProps) {
   return (
-    <main className={`${styles.page} marketing-page`}>
+    <main className={styles.page}>
       <LandingTopbar items={landingNavItems} />
       <div className={styles.subpageMain}>
         <header className={styles.subpageHero}>

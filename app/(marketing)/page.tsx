@@ -328,7 +328,7 @@ function VisualMock({ variant }: { variant: string }) {
 
 export default function ProductHomePage() {
   return (
-    <main className={`${styles.page} marketing-page`} id="top">
+    <main className={styles.page} id="top">
       <GridBackground />
       <section className={styles.hero}>
         <LandingTopbar items={landingNavItems} />
