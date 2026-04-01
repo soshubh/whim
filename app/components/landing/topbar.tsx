@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -18,6 +19,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import logoImage from "@/app/FBFLogo.png";
 
 import styles from "./topbar.module.css";
 
@@ -42,10 +44,12 @@ export function LandingTopbar({
     <div className={styles.topbar}>
       <div className={styles.topbarInner}>
         <Link aria-label="Go to homepage" className={styles.brand} href="/">
-          <span className={styles.brandGlyph}>
-            <span />
-            <span />
-          </span>
+          <Image
+            alt="Framer Form Builder"
+            className={styles.brandImage}
+            priority
+            src={logoImage}
+          />
         </Link>
         <NavigationMenu className={styles.topbarNav}>
           <NavigationMenuList className={styles.topbarNavList}>

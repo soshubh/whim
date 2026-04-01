@@ -1,3 +1,4 @@
+import "./foundation.css";
 import styles from "./layout.module.css";
 
 export default function MarketingLayout({
@@ -5,5 +6,5 @@ export default function MarketingLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <div className={styles.marketingRoot}>{children}</div>;
+  return <div className={`landing-theme ${styles.marketingRoot}`}>{children}</div>;
 }
