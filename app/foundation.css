@@ -9,7 +9,7 @@
   font-display: swap;
 }
 
-.marketing-page {
+:root {
   /* Primary palette */
   --marketing-primary-50: #fff6ec;
   --marketing-primary-100: #ffead3;
