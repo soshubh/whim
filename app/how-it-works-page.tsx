@@ -1,5 +1,5 @@
 import { LandingSubpageShell } from "./components/landing/subpage-shell";
-import styles from "./components/landing/subpage.module.css";
+import styles from "./home/page.module.css";
 
 const steps = [
   {
@@ -31,24 +31,24 @@ export default function HowItWorksPage() {
       title="From form idea to working Framer component."
       lede="The builder is designed to keep design, state logic, and export code aligned. You don’t rebuild the same decisions in three different places."
     >
-      <section className={styles.grid}>
+      <section className={styles.subpageGrid}>
         {steps.map((step, index) => (
-          <article className={styles.section} key={step.title}>
-            <div className={styles.stepNumber}>{index + 1}</div>
-            <h2 className={styles.sectionTitle}>{step.title}</h2>
-            <p className={styles.sectionBody}>{step.body}</p>
+          <article className={styles.subpageSection} key={step.title}>
+            <div className={styles.subpageStepNumber}>{index + 1}</div>
+            <h2 className={styles.subpageSectionTitle}>{step.title}</h2>
+            <p className={styles.subpageSectionBody}>{step.body}</p>
           </article>
         ))}
       </section>
 
-      <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>What the system handles</h2>
-        <p className={styles.sectionBody}>
+      <section className={styles.subpageSection}>
+        <h2 className={styles.subpageSectionTitle}>What the system handles</h2>
+        <p className={styles.subpageSectionBody}>
           The product is not only a visual layout tool. It is also responsible
           for validation rules, field states, Google Sheets transport, webhook
           payloads, and export-ready Framer code.
         </p>
-        <ul className={styles.bulletList}>
+        <ul className={styles.subpageBulletList}>
           <li>Real required-field and format validation instead of static helper text.</li>
           <li>Phone fields with split country code and local number behavior.</li>
           <li>OTP-related paths when a project needs gated submission flow.</li>

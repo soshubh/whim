@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 import { landingNavItems } from "./nav-items";
-import styles from "./subpage.module.css";
+import styles from "@/app/home/page.module.css";
 import { LandingTopbar } from "./topbar";
 
 type LandingSubpageShellProps = {
@@ -20,13 +20,13 @@ export function LandingSubpageShell({
   return (
     <main className={styles.page}>
       <LandingTopbar items={landingNavItems} />
-      <div className={styles.main}>
-        <header className={styles.hero}>
-          <p className={styles.eyebrow}>{eyebrow}</p>
-          <h1 className={styles.title}>{title}</h1>
-          <p className={styles.lede}>{lede}</p>
+      <div className={styles.subpageMain}>
+        <header className={styles.subpageHero}>
+          <p className={styles.subpageEyebrow}>{eyebrow}</p>
+          <h1 className={styles.subpageTitle}>{title}</h1>
+          <p className={styles.subpageLede}>{lede}</p>
         </header>
-        <div className={styles.sections}>{children}</div>
+        <div className={styles.subpageSections}>{children}</div>
       </div>
     </main>
   );

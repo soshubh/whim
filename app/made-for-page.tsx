@@ -1,5 +1,5 @@
 import { LandingSubpageShell } from "./components/landing/subpage-shell";
-import styles from "./components/landing/subpage.module.css";
+import styles from "./home/page.module.css";
 
 const audiences = [
   {
@@ -31,18 +31,18 @@ export default function MadeForPage() {
       title="Built for teams that need more than a pretty form."
       lede="The strongest use case is when the form needs to look good, behave correctly, and connect to real workflows without rewriting everything by hand."
     >
-      <section className={styles.grid}>
+      <section className={styles.subpageGrid}>
         {audiences.map((item) => (
-          <article className={styles.section} key={item.title}>
-            <h2 className={styles.sectionTitle}>{item.title}</h2>
-            <p className={styles.sectionBody}>{item.body}</p>
+          <article className={styles.subpageSection} key={item.title}>
+            <h2 className={styles.subpageSectionTitle}>{item.title}</h2>
+            <p className={styles.subpageSectionBody}>{item.body}</p>
           </article>
         ))}
       </section>
 
-      <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>Typical use cases</h2>
-        <ul className={styles.bulletList}>
+      <section className={styles.subpageSection}>
+        <h2 className={styles.subpageSectionTitle}>Typical use cases</h2>
+        <ul className={styles.subpageBulletList}>
           <li>Admission and counseling forms that need structured lead capture.</li>
           <li>High-intent enquiry forms where phone verification matters.</li>
           <li>Internal teams that want Google Sheets as the simplest backend.</li>

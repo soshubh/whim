@@ -54,6 +54,24 @@
   --landing-shadow-panel: 0 18px 44px rgba(15, 23, 42, 0.08);
 }
 
+.landing-theme .landing-primary-button {
+  background: var(--landing-color-primary);
+  border: none;
+  color: #ffffff;
+  font-family: var(--landing-font-sans);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  box-shadow: none;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+
+.landing-theme .landing-primary-button:hover {
+  opacity: 0.94;
+  transform: translateY(-1px);
+}
+
 @media (max-width: 1024px) {
   .landing-theme {
     --landing-inline-padding: 40px;

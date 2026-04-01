@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -11,17 +12,10 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
 } from "@/components/ui/navigation-menu";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import logoImage from "@/app/FBFLogo.png";
+import wordmarkImage from "@/app/WordMark/WordMark.svg";
 
-import styles from "./topbar.module.css";
+import styles from "@/app/home/page.module.css";
 
 type NavItem = {
   label: string;
@@ -42,87 +36,90 @@ export function LandingTopbar({
 
   return (
     <div className={styles.topbar}>
-      <div className={styles.topbarInner}>
-        <Link aria-label="Go to homepage" className={styles.brand} href="/">
-          <Image
-            alt="Framer Form Builder"
-            className={styles.brandImage}
-            priority
-            src={logoImage}
-          />
-        </Link>
-        <NavigationMenu className={styles.topbarNav}>
-          <NavigationMenuList className={styles.topbarNavList}>
-            {items.map((item) => (
-              <NavigationMenuItem key={item.label}>
-                <NavigationMenuLink asChild>
-                  <Link
-                    className={`${styles.topbarNavLink} ${pathname === item.href ? styles.topbarNavLinkActive : ""}`}
-                    href={item.href}
-                  >
-                    {item.label}
-                  </Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-            ))}
-          </NavigationMenuList>
-        </NavigationMenu>
-        <div className={styles.topbarActions}>
-          <span className={styles.profileName}>{profileLabel}</span>
+      <div
+        className={`${styles.topbarShell} ${isNavOpen ? styles.topbarShellExpanded : ""}`}
+      >
+        <div className={styles.topbarInner}>
+          <Link aria-label="Go to homepage" className={styles.brand} href="/">
+            <Image
+              alt="Framer Form Builder"
+              className={styles.brandMark}
+              priority
+              src={logoImage}
+            />
+            <Image
+              alt="Framer Form Builder wordmark"
+              className={styles.brandWordmark}
+              priority
+              src={wordmarkImage}
+            />
+          </Link>
+          <NavigationMenu className={styles.topbarNav}>
+            <NavigationMenuList className={styles.topbarNavList}>
+              {items.map((item) => (
+                <NavigationMenuItem key={item.label}>
+                  <NavigationMenuLink asChild>
+                    <Link
+                      className={`${styles.topbarNavLink} ${pathname === item.href ? styles.topbarNavLinkActive : ""}`}
+                      href={item.href}
+                    >
+                      {item.label}
+                    </Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+              ))}
+            </NavigationMenuList>
+          </NavigationMenu>
+          <div className={styles.topbarActions}>
+            <span className={styles.profileName}>{profileLabel}</span>
+            <Button
+              asChild
+              className="landing-primary-button"
+              size="sm"
+              variant="default"
+            >
+              <Link href="/builder">Open Builder</Link>
+            </Button>
+          </div>
           <Button
-            asChild
-            className={styles.profileAvatar}
-            size="sm"
-            variant="default"
+            aria-expanded={isNavOpen}
+            aria-label="Toggle navigation"
+            className={`${styles.topbarMenuButton} ${isNavOpen ? styles.topbarMenuButtonOpen : ""}`}
+            onClick={() => setIsNavOpen((current) => !current)}
+            size="icon-sm"
+            type="button"
+            variant="ghost"
           >
-            <Link href="/builder">Open Builder</Link>
+            <span />
+            <span />
           </Button>
         </div>
-        <Sheet open={isNavOpen} onOpenChange={setIsNavOpen}>
-          <SheetTrigger asChild>
-            <Button
-              aria-label="Open navigation"
-              className={styles.topbarMenuButton}
-              size="icon-sm"
-              type="button"
-              variant="ghost"
+        <div
+          className={`${styles.mobileNavPanel} ${isNavOpen ? styles.mobileNavPanelOpen : ""}`}
+        >
+          {items.map((item, index) => (
+            <Link
+              className={`${styles.mobileNavLink} ${styles.mobileNavEntry} ${pathname === item.href ? styles.mobileNavLinkActive : ""}`}
+              href={item.href}
+              key={item.label}
+              onClick={() => setIsNavOpen(false)}
+              style={{ "--nav-item-index": index } as CSSProperties}
             >
-              <span />
-              <span />
-              <span />
-            </Button>
-          </SheetTrigger>
-          <SheetContent className={styles.mobileSheetContent} side="right">
-            <SheetHeader className={styles.mobileSheetHeader}>
-              <SheetTitle>Navigation</SheetTitle>
-              <SheetDescription>
-                Browse the marketing pages and open the builder.
-              </SheetDescription>
-            </SheetHeader>
-            <div className={styles.mobileNavPanel}>
-              {items.map((item) => (
-                <Link
-                  className={`${styles.mobileNavLink} ${pathname === item.href ? styles.mobileNavLinkActive : ""}`}
-                  href={item.href}
-                  key={item.label}
-                  onClick={() => setIsNavOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              ))}
-              <Button
-                asChild
-                className={styles.mobileBuilderButton}
-                size="sm"
-                variant="default"
-              >
-                <Link href="/builder" onClick={() => setIsNavOpen(false)}>
-                  Open Builder
-                </Link>
-              </Button>
-            </div>
-          </SheetContent>
-        </Sheet>
+              {item.label}
+            </Link>
+          ))}
+          <Button
+            asChild
+            className={`landing-primary-button ${styles.mobileBuilderButton} ${styles.mobileNavEntry}`}
+            size="sm"
+            style={{ "--nav-item-index": items.length } as CSSProperties}
+            variant="default"
+          >
+            <Link href="/builder" onClick={() => setIsNavOpen(false)}>
+              Open Builder
+            </Link>
+          </Button>
+        </div>
       </div>
     </div>
   );

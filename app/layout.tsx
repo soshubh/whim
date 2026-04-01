@@ -8,7 +8,7 @@ const interHeading = Inter({subsets:['latin'],variable:'--font-heading'});
 const roboto = Roboto({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
-  title: "Framer Form Builder",
+  title: "WHIM",
   description: "Build and export production-ready Framer forms with live preview and code generation.",
 };
 

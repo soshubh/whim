@@ -385,12 +385,10 @@ export default function ProductHomePage() {
             Google Sheets support, webhook delivery, and cleaner code from one builder.
           </p>
           <div className={styles.heroActions}>
-            <Button asChild className={styles.primaryButton} size="lg">
+            <Button asChild className="landing-primary-button" size="sm">
               <Link href="/builder">Form Builder</Link>
             </Button>
-            <Badge className={styles.freeChip} variant="outline">
-              Totally free
-            </Badge>
+            <span className={styles.freeChip}>Totally free</span>
           </div>
         </div>
 
@@ -455,13 +453,13 @@ export default function ProductHomePage() {
         <div className={styles.footerCard}>
           <div className={styles.footerEyebrow}>Design bold. Launch fast.</div>
           <div className={styles.footerActions}>
-            <Button asChild className={styles.primaryButton} size="lg">
+            <Button asChild className="landing-primary-button" size="sm">
               <Link href="/builder">Start for free</Link>
             </Button>
             <Button
               asChild
               className={styles.secondaryButton}
-              size="lg"
+              size="sm"
               variant="outline"
             >
               <Link href="/builder">Open builder</Link>

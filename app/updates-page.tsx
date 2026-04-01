@@ -1,5 +1,5 @@
 import { LandingSubpageShell } from "./components/landing/subpage-shell";
-import styles from "./components/landing/subpage.module.css";
+import styles from "./home/page.module.css";
 
 const updates = [
   {
@@ -32,15 +32,15 @@ export default function UpdatesPage() {
       title="What changed most recently."
       lede="This page surfaces product changes in a simple card rhythm, similar to the clean update style you pointed to, while staying consistent with this product’s darker visual system."
     >
-      <section className={styles.stack}>
+      <section className={styles.subpageStack}>
         {updates.map((item) => (
-          <article className={styles.updateCard} key={item.title}>
-            <p className={styles.updateMeta}>{item.date}</p>
-            <h2 className={styles.updateTitle}>{item.title}</h2>
-            <p className={styles.updateBody}>{item.body}</p>
-            <div className={styles.updateTags}>
+          <article className={styles.subpageUpdateCard} key={item.title}>
+            <p className={styles.subpageUpdateMeta}>{item.date}</p>
+            <h2 className={styles.subpageUpdateTitle}>{item.title}</h2>
+            <p className={styles.subpageUpdateBody}>{item.body}</p>
+            <div className={styles.subpageUpdateTags}>
               {item.tags.map((tag) => (
-                <span className={styles.updateTag} key={tag}>
+                <span className={styles.subpageUpdateTag} key={tag}>
                   {tag}
                 </span>
               ))}
