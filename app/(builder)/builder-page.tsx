@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import posthog from "posthog-js";
 
 import { BuilderCenterPanel } from "../components/builder-center-panel";
 import { BuilderLeftPanel } from "../components/builder-left-panel";
@@ -310,6 +311,10 @@ export default function Home() {
 
   const copyText = async (label: string, value: string) => {
     await navigator.clipboard.writeText(value);
+    posthog.capture("code_copied", {
+      area: "builder",
+      source: label,
+    });
     setCopiedState(label);
     window.setTimeout(() => setCopiedState(""), 1800);
   };
@@ -327,6 +332,9 @@ export default function Home() {
 
   useEffect(() => {
     setPreviewMode(getDefaultPreviewMode());
+    posthog.capture("builder_opened", {
+      route: "/builder",
+    });
   }, []);
 
   useEffect(() => {

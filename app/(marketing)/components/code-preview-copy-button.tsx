@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import posthog from "posthog-js";
 
 import styles from "../page.module.css";
 
@@ -22,7 +23,13 @@ export function CodePreviewCopyButton() {
   return (
     <button
       className={`${styles.codePreviewCopy} ${isCopied ? styles.codePreviewCopyActive : ""}`}
-      onClick={() => setIsCopied(true)}
+      onClick={() => {
+        posthog.capture("code_copied", {
+          area: "marketing",
+          source: "landing_preview",
+        });
+        setIsCopied(true);
+      }}
       type="button"
     >
       {isCopied ? "Code copied" : "Copy"}
