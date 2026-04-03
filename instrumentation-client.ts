@@ -20,9 +20,11 @@ try {
   ) {
     posthog.init(posthogKey, {
       api_host: posthogHost,
-      defaults: "2025-05-24",
-      capture_pageview: "history_change",
-      capture_pageleave: true,
+      autocapture: false,
+      capture_pageview: false,
+      capture_pageleave: false,
+      capture_performance: false,
+      disable_session_recording: true,
       persistence: "localStorage+cookie",
     });
 
@@ -30,22 +32,4 @@ try {
   }
 } catch (error) {
   console.error("[Analytics] PostHog init failed", error);
-}
-
-export function onRouterTransitionStart(
-  url: string,
-  navigationType: "push" | "replace" | "traverse",
-) {
-  if (!posthogKey) {
-    return;
-  }
-
-  try {
-    posthog.capture("app_navigation_started", {
-      navigationType,
-      url,
-    });
-  } catch (error) {
-    console.error("[Analytics] Navigation tracking failed", error);
-  }
 }

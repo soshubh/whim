@@ -3,6 +3,7 @@ import Link from "next/link";
 import { BuilderStatePreview } from "./components/builder-state-preview";
 import { CodePreviewCopyButton } from "./components/code-preview-copy-button";
 import { LandingFooter } from "./components/footer";
+import { HomepageAnalytics } from "./components/homepage-analytics";
 import { marketingDisplay, marketingSans } from "./components/marketing-fonts";
 import { landingNavItems } from "./components/nav-items";
 import { LearnGrid } from "./components/learn-grid";
@@ -79,6 +80,7 @@ export default function ProductHomePage() {
       className={`${styles.page} ${marketingSans.variable} ${marketingDisplay.variable}`}
       id="top"
     >
+      <HomepageAnalytics />
       <GridBackground />
       <section className={styles.hero}>
         <LandingTopbar items={landingNavItems} />
